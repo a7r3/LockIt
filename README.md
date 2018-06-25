@@ -6,7 +6,7 @@ Application which sets a timer, within which the child is allowed to use a restr
 
 ## Features
 
-* (TODO) Apps other than the Whitelisted apps won't be opened
+* Apps other than the Whitelisted apps won't be opened
 
 * (TODO) Manage Profiles, which vary in the Apps whitelisted, and the duration of Profile Usage
 

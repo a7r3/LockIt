@@ -14,6 +14,11 @@ public class Application {
         return positionInApplicationList;
     }
 
+    public boolean isAfter(Application toBeInserted) {
+        return getApplicationName().compareTo(toBeInserted.getApplicationName()) > 0;
+    }
+
+
     public void setPositionInApplicationList(int positionInApplicationList) {
         this.positionInApplicationList = positionInApplicationList;
     }

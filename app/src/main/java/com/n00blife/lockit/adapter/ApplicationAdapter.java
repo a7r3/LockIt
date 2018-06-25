@@ -18,25 +18,29 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
 
     private Context context;
     private ArrayList<Application> applicationArrayList;
-    private OnItemClicked onHolderClicked;
+    private onItemClicked onItemClicked;
+    private int layoutResId;
 
-    public ApplicationAdapter(Context context, ArrayList<Application> applicationArrayList, OnItemClicked onHolderClicked) {
+    public ApplicationAdapter(Context context, ArrayList<Application> applicationArrayList, int layoutResId) {
         this.context = context;
         this.applicationArrayList = applicationArrayList;
-        this.onHolderClicked = onHolderClicked;
+        this.layoutResId = layoutResId;
+    }
+
+    public void setOnItemClicked(onItemClicked onItemClicked) {
+        this.onItemClicked = onItemClicked;
     }
 
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        return new ViewHolder(LayoutInflater.from(context).inflate(R.layout.app_item, parent, false));
+        return new ViewHolder(LayoutInflater.from(context).inflate(layoutResId, parent, false));
     }
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         holder.applicationIcon.setImageDrawable(applicationArrayList.get(position).getApplicationIcon());
         holder.applicationName.setText(applicationArrayList.get(position).getApplicationName());
-        holder.applicationPackageName.setText(applicationArrayList.get(position).getApplicationPackageName());
         holder.dostuff(holder, applicationArrayList.get(position), position);
     }
 
@@ -49,13 +53,11 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
 
         public ImageView applicationIcon;
         public TextView applicationName;
-        public TextView applicationPackageName;
 
         public ViewHolder(View itemView) {
             super(itemView);
             applicationIcon = itemView.findViewById(R.id.application_icon);
             applicationName = itemView.findViewById(R.id.application_name);
-            applicationPackageName = itemView.findViewById(R.id.application_package_name);
         }
 
         public void dostuff(final ViewHolder holder, final Application application, final int position) {
@@ -63,14 +65,14 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
                 @Override
                 public void onClick(View v) {
                     application.setPositionInApplicationList(holder.getAdapterPosition());
-                    onHolderClicked.onHolderClick(holder, application);
+                    onItemClicked.onHolderClick(holder, application);
                 }
             });
         }
 
     }
 
-    public interface OnItemClicked {
+    public interface onItemClicked {
         public void onHolderClick(ViewHolder viewHolder, Application application);
     }
 }
