@@ -1,34 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@color/colorPrimaryDark"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark">
 
     <android.support.design.widget.CoordinatorLayout
-        android:layout_width="wrap_content"
         android:id="@+id/application_icon_group"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_height="wrap_content">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
-            android:layout_margin="32dp"
-            android:layout_gravity="center"
             android:id="@+id/application_icon"
             android:layout_width="94dp"
             android:layout_height="94dp"
+            android:layout_gravity="center"
+            android:layout_margin="32dp"
             android:src="@mipmap/ic_launcher_round" />
 
         <ImageView
-            android:tint="#FFF"
-            app:layout_anchor="@id/application_icon"
-            app:layout_anchorGravity="end|top"
             android:layout_width="64dp"
             android:layout_height="64dp"
-            android:src="@drawable/ic_001_rest_1"/>
+            android:src="@drawable/ic_001_rest_1"
+            android:tint="#FFF"
+            app:layout_anchor="@id/application_icon"
+            app:layout_anchorGravity="end|top" />
 
     </android.support.design.widget.CoordinatorLayout>
 
@@ -36,69 +36,69 @@
         android:id="@+id/text_error_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Shhh!"
-        app:layout_constraintTop_toTopOf="parent"
         android:layout_marginTop="32dp"
-        android:textStyle="bold"
+        android:gravity="center"
+        android:padding="8dp"
+        android:text="Shhh!"
         android:textColor="#FFF"
         android:textSize="28sp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center"
-        android:padding="8dp"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
-        app:layout_constraintTop_toBottomOf="@id/text_error_header"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_error_header">
 
         <TextView
             android:id="@+id/text_error_content"
-            android:text="{app}"
-            android:textStyle="bold|italic"
-            android:textColor="#FFF"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="18sp" />
+            android:text="{app}"
+            android:textColor="#FFF"
+            android:textSize="18sp"
+            android:textStyle="bold|italic" />
 
         <TextView
+            android:id="@+id/text_error_additional_content"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/text_error_additional_content"
             android:text=" is taking a nap"
             android:textColor="#FFF"
-            android:textSize="18sp"/>
+            android:textSize="18sp" />
 
     </LinearLayout>
 
     <TextView
+        android:id="@+id/question"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="What do you want to do ?"
-        android:id="@+id/question"
-        app:layout_constraintTop_toBottomOf="@id/application_icon_group"
         android:layout_marginTop="16dp"
-        android:textSize="18sp"
+        android:text="What do you want to do ?"
         android:textColor="#FFF"
+        android:textSize="18sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/application_icon_group" />
 
     <TextView
+        android:id="@+id/exit_button"
+        style="@style/Base.Widget.AppCompat.Button.Colored"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="#4CAF50"
         android:text="Let It Sleep"
         android:textAllCaps="true"
-        app:layout_constraintTop_toBottomOf="@id/question"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        style="@style/Base.Widget.AppCompat.Button.Colored"
         android:textColor="#FFF"
-        android:backgroundTint="#4CAF50"
-        android:id="@+id/exit_button" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/question" />
 
 </android.support.constraint.ConstraintLayout>

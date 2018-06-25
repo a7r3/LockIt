@@ -10,24 +10,23 @@ public class Application {
     private Drawable applicationIcon;
     private int positionInApplicationList = -1;
 
-    public int getPositionInApplicationList() {
-        return positionInApplicationList;
-    }
-
-    public boolean isAfter(Application toBeInserted) {
-        return getApplicationName().compareTo(toBeInserted.getApplicationName()) > 0;
-    }
-
-
-    public void setPositionInApplicationList(int positionInApplicationList) {
-        this.positionInApplicationList = positionInApplicationList;
-    }
-
     public Application(String applicationName, String applicationPackageName, String applicationVersion, Drawable applicationIcon) {
         this.applicationName = applicationName;
         this.applicationPackageName = applicationPackageName;
         this.applicationVersion = applicationVersion;
         this.applicationIcon = applicationIcon;
+    }
+
+    public int getPositionInApplicationList() {
+        return positionInApplicationList;
+    }
+
+    public void setPositionInApplicationList(int positionInApplicationList) {
+        this.positionInApplicationList = positionInApplicationList;
+    }
+
+    public boolean isAfter(Application toBeInserted) {
+        return getApplicationName().compareTo(toBeInserted.getApplicationName()) > 0;
     }
 
     public Drawable getApplicationIcon() {

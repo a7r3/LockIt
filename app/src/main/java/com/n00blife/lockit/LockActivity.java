@@ -14,6 +14,8 @@ public class LockActivity extends AppCompatActivity {
     private TextView applicationName;
     private ImageView applicationIcon;
     private TextView exitButton;
+    private String applicationPkg;
+    private ApplicationInfo info;
 
     @Override
     public void onBackPressed() {
@@ -23,10 +25,6 @@ public class LockActivity extends AppCompatActivity {
         exitToLauncher.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(exitToLauncher);
     }
-
-    private String applicationPkg;
-
-    private ApplicationInfo info;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

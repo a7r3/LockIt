@@ -4,11 +4,11 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.transition.TransitionManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -122,13 +122,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onHolderClick(ApplicationAdapter.ViewHolder viewHolder, final Application application) {
                 whitelistedApplicationList.remove(application);
-                if(whitelistedApplicationList.isEmpty()) {
+                if (whitelistedApplicationList.isEmpty()) {
                     TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
                     whiteListCard.setVisibility(View.GONE);
                 }
                 whitelistedApplicationAdapter.notifyItemRemoved(viewHolder.getAdapterPosition());
-                for(int i = -1; i < applicationArrayList.size() - 1; i++) {
-                    if (applicationArrayList.get(i+1).isAfter(application)) {
+                for (int i = -1; i < applicationArrayList.size() - 1; i++) {
+                    if (applicationArrayList.get(i + 1).isAfter(application)) {
                         int index = (i == -1) ? 0 : i;
                         Log.d(TAG, "Added " + application.getApplicationName() + " to " + index);
                         applicationArrayList.add(index, application);
@@ -152,13 +152,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Toast.makeText(MainActivity.this, "Lock Initiated", Toast.LENGTH_LONG).show();
-                Intent lockServiceIntent =  new Intent(MainActivity.this, LockService.class);
+                Intent lockServiceIntent = new Intent(MainActivity.this, LockService.class);
                 ArrayList<String> pkgList = new ArrayList<>();
                 ArrayList<String> allPkgList = new ArrayList<>();
-                for(Application a : whitelistedApplicationList) {
+                for (Application a : whitelistedApplicationList) {
                     pkgList.add(a.getApplicationPackageName());
                 }
-                for(Application a : applicationArrayList) {
+                for (Application a : applicationArrayList) {
                     allPkgList.add(a.getApplicationPackageName());
                 }
                 Log.d(TAG, "Starting LockService for 100s (Fixed)");

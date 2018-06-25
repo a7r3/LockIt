@@ -49,6 +49,10 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
         return applicationArrayList.size();
     }
 
+    public interface onItemClicked {
+        public void onHolderClick(ViewHolder viewHolder, Application application);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         public ImageView applicationIcon;
@@ -70,9 +74,5 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
             });
         }
 
-    }
-
-    public interface onItemClicked {
-        public void onHolderClick(ViewHolder viewHolder, Application application);
     }
 }

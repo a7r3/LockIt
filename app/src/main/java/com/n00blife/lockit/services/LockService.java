@@ -39,14 +39,12 @@ import static android.support.v4.app.NotificationCompat.PRIORITY_MIN;
 public class LockService extends Service {
 
     private final String TAG = getClass().getSimpleName();
-
-    private class LocalBinder extends Binder {
-        LockService getService() {
-            return LockService.this;
-        }
-    }
-
     private final IBinder binder = new LocalBinder();
+    // TODO: Fetch all application list from a Local Database Instead
+    private ArrayList<String> allApplicationPackages;
+    private ArrayList<String> whitelistedApplicationPackages;
+    private Observable<Long> timerObservable;
+    private Observer<Long> timerObserver;
 
     @Nullable
     @Override
@@ -54,18 +52,13 @@ public class LockService extends Service {
         return binder;
     }
 
-    // TODO: Fetch all application list from a Local Database Instead
-    private ArrayList<String> allApplicationPackages;
-
-    private ArrayList<String> whitelistedApplicationPackages;
-    private Observable<Long> timerObservable;
-    private Observer<Long> timerObserver;
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        allApplicationPackages = new Gson().fromJson(intent.getStringExtra(Constants.EXTRA_ALL_APPS_PACKAGE_LIST), new TypeToken<ArrayList<String>>(){}.getType());
+        allApplicationPackages = new Gson().fromJson(intent.getStringExtra(Constants.EXTRA_ALL_APPS_PACKAGE_LIST), new TypeToken<ArrayList<String>>() {
+        }.getType());
 
-        whitelistedApplicationPackages = new Gson().fromJson(intent.getStringExtra(Constants.EXTRA_WHITELISTED_APPS_PACKAGE_LIST), new TypeToken<ArrayList<String>>(){}.getType());
+        whitelistedApplicationPackages = new Gson().fromJson(intent.getStringExtra(Constants.EXTRA_WHITELISTED_APPS_PACKAGE_LIST), new TypeToken<ArrayList<String>>() {
+        }.getType());
 
         timerObservable = Observable
                 .intervalRange(0, 100, 0, 1L, TimeUnit.SECONDS)
@@ -77,7 +70,6 @@ public class LockService extends Service {
 
         return super.onStartCommand(intent, flags, startId);
     }
-
 
     public void initTimerObserver() {
         timerObserver = new Observer<Long>() {
@@ -191,5 +183,11 @@ public class LockService extends Service {
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
         stopSelf();
+    }
+
+    private class LocalBinder extends Binder {
+        LockService getService() {
+            return LockService.this;
+        }
     }
 }
