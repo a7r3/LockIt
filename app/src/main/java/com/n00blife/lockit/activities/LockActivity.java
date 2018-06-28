@@ -1,4 +1,4 @@
-package com.n00blife.lockit;
+package com.n00blife.lockit.activities;
 
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import com.n00blife.lockit.R;
 
 public class LockActivity extends AppCompatActivity {
 

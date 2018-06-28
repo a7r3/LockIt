@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <TextView
+        app:layout_constrainedWidth="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@id/timer_picker"
+        android:id="@+id/activate_text"
+        android:layout_width="wrap_content"
+        android:textStyle="bold|italic"
+        android:textSize="16sp"
+        android:layout_height="wrap_content"
+        android:text="Activate for"/>
+
+    <android.support.constraint.Guideline
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/guideline"
+        app:layout_constraintGuide_percent="0.7"/>
+
+    <NumberPicker
+        android:id="@+id/timer_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <TextView
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/timer_picker"
+        android:layout_marginStart="8dp"
+        android:id="@+id/minutes_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="minutes"/>
+
+</android.support.constraint.ConstraintLayout>

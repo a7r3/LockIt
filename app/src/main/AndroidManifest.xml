@@ -12,17 +12,19 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LockActivity"
+        <activity android:name=".activities.LockActivity"
             android:excludeFromRecents="true"
             android:noHistory="true"
             android:theme="@style/LockTheme"/>
+
+        <activity android:name=".activities.ProfileCreationActivity" />
 
         <service android:name=".services.LockService"
             android:process=":lockService" />

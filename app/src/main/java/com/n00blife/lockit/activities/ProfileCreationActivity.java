@@ -1,9 +1,7 @@
-package com.n00blife.lockit;
+package com.n00blife.lockit.activities;
 
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.transition.TransitionManager;
@@ -20,7 +18,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
+import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.services.LockService;
 import com.n00blife.lockit.util.Constants;
@@ -34,14 +35,12 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
-public class MainActivity extends AppCompatActivity {
+public class ProfileCreationActivity extends AppCompatActivity {
 
     private final String TAG = getClass().getSimpleName();
 
-    // FIXME PLEASE! THIS IS SO BAD (SQLite Implementation Pls)
     private ArrayList<Application> applicationArrayList = new ArrayList<>();
     private ArrayList<Application> whitelistedApplicationList = new ArrayList<>();
-    private ArrayList<Application> applicationArrayListBackup = new ArrayList<>();
 
     private ApplicationAdapter applicationAdapter;
     private ApplicationAdapter whitelistedApplicationAdapter;
@@ -55,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_profile_creator);
 
         pm = getPackageManager();
 
@@ -82,25 +81,19 @@ public class MainActivity extends AppCompatActivity {
 
         final ProgressBar progressBar = findViewById(R.id.progressbar);
 
-        Observable.fromIterable(pm.queryIntentActivities(mainIntent, 0))
-                .sorted(new ResolveInfo.DisplayNameComparator(pm))
+        Observable.fromIterable(ApplicationDatabase.getInstance(this).getAllApplications())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ResolveInfo>() {
+                .subscribe(new Observer<Application>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                         progressBar.setVisibility(View.VISIBLE);
                     }
 
                     @Override
-                    public void onNext(ResolveInfo resolveInfo) {
-                        ActivityInfo info = resolveInfo.activityInfo;
-                        applicationArrayList.add(new Application(
-                                resolveInfo.loadLabel(pm).toString(),
-                                info.packageName,
-                                "0.01",
-                                resolveInfo.loadIcon(pm)
-                        ));
+                    public void onNext(Application application) {
+                        applicationArrayList.add(application);
+                        applicationAdapter.notifyItemInserted(applicationArrayList.size());
                     }
 
                     @Override
@@ -110,10 +103,8 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete() {
-                        Toast.makeText(MainActivity.this, "Complete", Toast.LENGTH_LONG).show();
-                        applicationAdapter.notifyDataSetChanged();
-                        applicationArrayListBackup.addAll(applicationArrayList);
                         progressBar.setVisibility(View.GONE);
+                        Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
                     }
                 });
 
@@ -151,21 +142,17 @@ public class MainActivity extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(MainActivity.this, "Lock Initiated", Toast.LENGTH_LONG).show();
-                Intent lockServiceIntent = new Intent(MainActivity.this, LockService.class);
                 ArrayList<String> pkgList = new ArrayList<>();
-                ArrayList<String> allPkgList = new ArrayList<>();
-                for (Application a : whitelistedApplicationList) {
+                Log.d(TAG, "Creating Profile " + "Foo");
+                for(Application a : whitelistedApplicationList) {
                     pkgList.add(a.getApplicationPackageName());
                 }
-                for (Application a : applicationArrayList) {
-                    allPkgList.add(a.getApplicationPackageName());
-                }
-                Log.d(TAG, "Starting LockService for 100s (Fixed)");
-                lockServiceIntent.putExtra(Constants.EXTRA_WHITELISTED_APPS_PACKAGE_LIST, new Gson().toJson(pkgList));
-                lockServiceIntent.putExtra(Constants.EXTRA_ALL_APPS_PACKAGE_LIST, new Gson().toJson(allPkgList));
-                ContextCompat.startForegroundService(MainActivity.this, lockServiceIntent);
-                supportFinishAfterTransition();
+                // Adding LockIt itself to the WhiteList TODO Remove this later
+                pkgList.add(getPackageName());
+                // Adding Default Launcher to the whitelist
+                WhiteListedApplicationDatabase.getInstance(ProfileCreationActivity.this).createProfile("Bar", pkgList);
+                startActivity(new Intent(ProfileCreationActivity.this, MainActivity.class));
+                finish();
             }
         });
 
@@ -174,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 whitelistedApplicationList.clear();
                 applicationArrayList.clear();
-                applicationArrayList.addAll(applicationArrayListBackup);
                 applicationAdapter.notifyDataSetChanged();
                 TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
                 whiteListCard.setVisibility(View.GONE);

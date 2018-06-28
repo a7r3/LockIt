@@ -8,6 +8,7 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -19,8 +20,10 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.n00blife.lockit.LockActivity;
+import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.R;
+import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.util.Constants;
 
 import java.util.ArrayList;
@@ -40,7 +43,6 @@ public class LockService extends Service {
 
     private final String TAG = getClass().getSimpleName();
     private final IBinder binder = new LocalBinder();
-    // TODO: Fetch all application list from a Local Database Instead
     private ArrayList<String> allApplicationPackages;
     private ArrayList<String> whitelistedApplicationPackages;
     private Observable<Long> timerObservable;
@@ -54,19 +56,21 @@ public class LockService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        allApplicationPackages = new Gson().fromJson(intent.getStringExtra(Constants.EXTRA_ALL_APPS_PACKAGE_LIST), new TypeToken<ArrayList<String>>() {
-        }.getType());
 
-        whitelistedApplicationPackages = new Gson().fromJson(intent.getStringExtra(Constants.EXTRA_WHITELISTED_APPS_PACKAGE_LIST), new TypeToken<ArrayList<String>>() {
-        }.getType());
+        allApplicationPackages = ApplicationDatabase.getInstance(this).getAllPackages();
+
+        whitelistedApplicationPackages = WhiteListedApplicationDatabase.getInstance(this).getPackageListForProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME));
 
         timerObservable = Observable
-                .intervalRange(0, 100, 0, 1L, TimeUnit.SECONDS)
+                .intervalRange(0, intent.getIntExtra(Constants.EXTRA_TIMER, 1) * 60, 0, 1L, TimeUnit.SECONDS)
                 .subscribeOn(Schedulers.io());
 
         initTimerObserver();
 
         timerObservable.subscribe(timerObserver);
+
+        Log.d(TAG, "Apps: " + allApplicationPackages.size());
+        Log.d(TAG, "WhiteApps: " + whitelistedApplicationPackages.size());
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -83,7 +87,6 @@ public class LockService extends Service {
                 UsageStatsManager usm = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
                 long time = System.currentTimeMillis();
                 final SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
-
                 Observable.fromIterable(usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.from(getMainLooper()))
@@ -107,8 +110,13 @@ public class LockService extends Service {
                             public void onComplete() {
                                 if (mySortedMap != null && !mySortedMap.isEmpty()) {
                                     // Getting the packageName of the Application which was recently used
-                                    String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
-                                    // TODO: Determine the default launcher and prevent LockActivity to start with it.
+                                    final String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                                    Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
+                                    defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
+                                    // If the Currently open App is the Default Launcher
+                                    // Don't block it
+                                    if(pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
+                                        return;
                                     if (!whitelistedApplicationPackages.contains(pkg) && allApplicationPackages.contains(pkg)) {
                                         Intent intent = new Intent(LockService.this, LockActivity.class);
                                         intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
