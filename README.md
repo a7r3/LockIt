@@ -8,7 +8,8 @@ Application which sets a timer, within which the child is allowed to use a restr
 
 * Apps other than the Whitelisted apps won't be opened
 
-* (TODO) Manage Profiles, which vary in the Apps whitelisted, and the duration of Profile Usage
+* Create Profiles, which vary in the Apps whitelisted
+  - (TODO) Delete Profiles
 
 * Create a Profile with the Apps to be Whitelisted
 
