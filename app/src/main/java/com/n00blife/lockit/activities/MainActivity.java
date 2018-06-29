@@ -2,9 +2,7 @@ package com.n00blife.lockit.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -16,6 +14,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.Toast;
 
@@ -23,11 +22,9 @@ import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ProfileAdapter;
 import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
-import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Profile;
 import com.n00blife.lockit.services.LockService;
 import com.n00blife.lockit.util.Constants;
-import com.n00blife.lockit.util.ImageUtils;
 
 import java.util.ArrayList;
 
@@ -45,11 +42,19 @@ public class MainActivity extends AppCompatActivity {
     private ApplicationDatabase applicationDatabase;
     private ArrayList<Profile> profiles = new ArrayList<>();
     private ProfileAdapter adapter;
+    private LinearLayout noProfileContainer;
+
+    private void showNoProfileContainer() {
+        noProfileContainer.setVisibility(View.VISIBLE);
+        profileListView.setVisibility(View.GONE);
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        noProfileContainer = findViewById(R.id.no_profile_container);
 
         profileListView = findViewById(R.id.profile_recyclerview);
         profileListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -57,6 +62,9 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ProfileAdapter(this, profiles);
 
         pm = getPackageManager();
+
+        if(profiles.size() == 0)
+            showNoProfileContainer();
 
         adapter.setOnItemClickedListener(new ProfileAdapter.OnItemClickedListener() {
             @Override

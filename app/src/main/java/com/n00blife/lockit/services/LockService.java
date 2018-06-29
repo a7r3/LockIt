@@ -177,14 +177,10 @@ public class LockService extends Service {
         }
 
         NotificationCompat.Builder notification = new NotificationCompat.Builder(this, channelId)
-                .setContentText("Productivity") // Notification Content
-                .setContentTitle("Games FTW!")// Notification Title
-                // Seems like NotificationCompat mananges to
-                // Not involve Channel Stuffs in pre-26
+                .setContentTitle("Enjoy your stay, Kid!")
                 .setPriority(PRIORITY_MIN)
                 .setChannelId(channelId) // I want to go to this channel
-                .setSmallIcon(R.mipmap.ic_launcher_round) // Icon which'd appear to left of AppTitle
-                .setAutoCancel(true);
+                .setSmallIcon(R.drawable.ic_001_rest_1); // Icon which'd appear to left of AppTitle
 
         startForeground(notificationId, notification.build());
     }
