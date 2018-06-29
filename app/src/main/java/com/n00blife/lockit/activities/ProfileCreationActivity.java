@@ -109,10 +109,8 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 for(Application a : whitelistedApplicationList) {
                     pkgList.add(a.getApplicationPackageName());
                 }
-                // Adding LockIt itself to the WhiteList TODO Remove this later
-                pkgList.add(getPackageName());
                 // Adding Default Launcher to the whitelist
-                WhiteListedApplicationDatabase.getInstance(ProfileCreationActivity.this).createProfile("Bar", pkgList);
+                WhiteListedApplicationDatabase.getInstance(ProfileCreationActivity.this).createProfile("DefaultProfile", pkgList);
                 startActivity(new Intent(ProfileCreationActivity.this, MainActivity.class));
                 finish();
             }

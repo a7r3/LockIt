@@ -113,6 +113,10 @@ public class LockService extends Service {
                                     final String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                                     Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
                                     defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
+                                    // If the currently open app is LockIt
+                                    // TODO Show a LockActivity, but with a Auth Entry
+                                    if(pkg.equals(getPackageName()))
+                                        return;
                                     // If the Currently open App is the Default Launcher
                                     // Don't block it
                                     if(pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
