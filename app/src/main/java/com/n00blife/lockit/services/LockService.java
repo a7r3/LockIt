@@ -18,10 +18,8 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.R;
+import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.util.Constants;
@@ -115,11 +113,11 @@ public class LockService extends Service {
                                     defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
                                     // If the currently open app is LockIt
                                     // TODO Show a LockActivity, but with a Auth Entry
-                                    if(pkg.equals(getPackageName()))
+                                    if (pkg.equals(getPackageName()))
                                         return;
                                     // If the Currently open App is the Default Launcher
                                     // Don't block it
-                                    if(pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
+                                    if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
                                         return;
                                     if (!whitelistedApplicationPackages.contains(pkg) && allApplicationPackages.contains(pkg)) {
                                         Intent intent = new Intent(LockService.this, LockActivity.class);

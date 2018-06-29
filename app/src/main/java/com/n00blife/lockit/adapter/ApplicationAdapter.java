@@ -40,13 +40,13 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         // Application List in ProfileCreationActivity
-        if(holder.applicationPackageName != null) {
+        if (holder.applicationPackageName != null) {
             holder.applicationPackageName.setText(applicationArrayList.get(position).getApplicationPackageName());
             holder.applicationVersion.setText(applicationArrayList.get(position).getApplicationVersion());
             holder.addItemClick();
         }
         // Application in WhiteListRecyclerView
-        if(holder.applicationName != null)
+        if (holder.applicationName != null)
             holder.applicationName.setText(applicationArrayList.get(position).getApplicationName());
         // Application list in Profile Layout
         holder.applicationIcon.setImageBitmap(applicationArrayList.get(position).getApplicationIcon());

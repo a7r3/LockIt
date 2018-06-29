@@ -42,11 +42,11 @@
         android:id="@+id/application_version"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
         android:text="v0.1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/application_name"
         android:textSize="15sp"
         android:textStyle="bold"
-        android:layout_marginStart="8dp"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/application_name" />
 
 </android.support.constraint.ConstraintLayout>

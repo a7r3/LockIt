@@ -1,7 +1,6 @@
 package com.n00blife.lockit.model;
 
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 
 public class Application {
 

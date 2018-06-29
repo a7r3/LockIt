@@ -29,10 +29,8 @@ import java.util.ArrayList;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
-import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class ProfileCreationActivity extends AppCompatActivity {
@@ -106,7 +104,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 ArrayList<String> pkgList = new ArrayList<>();
                 Log.d(TAG, "Creating Profile " + "Foo");
-                for(Application a : whitelistedApplicationList) {
+                for (Application a : whitelistedApplicationList) {
                     pkgList.add(a.getApplicationPackageName());
                 }
                 // Adding Default Launcher to the whitelist
@@ -131,7 +129,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
         // Retrieve a list of installed applications if this App is opened for the first time
         // One-Time process
-        if(applicationDatabase.getRowCount() == 0)
+        if (applicationDatabase.getRowCount() == 0)
             retrieveApplicationList();
         else
             retrieveApplicationListFromDatabase();

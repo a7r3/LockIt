@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         pm = getPackageManager();
 
-        if(profiles.size() == 0)
+        if (profiles.size() == 0)
             showNoProfileContainer();
 
         adapter.setOnItemClickedListener(new ProfileAdapter.OnItemClickedListener() {

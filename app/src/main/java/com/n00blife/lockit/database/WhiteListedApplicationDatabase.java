@@ -10,7 +10,6 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Profile;
 
 import java.util.ArrayList;
@@ -130,7 +129,8 @@ public class WhiteListedApplicationDatabase extends SQLiteOpenHelper {
         Cursor appDataCursor = sqLiteDatabase.rawQuery(QUERY, null);
         appDataCursor.moveToFirst();
         // Returns true if cursor is moved to the first row successfully
-        packageList = new Gson().fromJson(appDataCursor.getString(appDataCursor.getColumnIndex(PACKAGE_LIST)), new TypeToken<ArrayList<String>>(){}.getType());
+        packageList = new Gson().fromJson(appDataCursor.getString(appDataCursor.getColumnIndex(PACKAGE_LIST)), new TypeToken<ArrayList<String>>() {
+        }.getType());
         // Prevents any other Query to be executed after this
         appDataCursor.close();
         sqLiteDatabase.endTransaction();
@@ -145,14 +145,15 @@ public class WhiteListedApplicationDatabase extends SQLiteOpenHelper {
         // Runs the Query and returns the result to this Cursor
         // Cursor <-> Result Iterator
         Cursor appDataCursor = sqLiteDatabase.rawQuery(QUERY, null);
-        if(appDataCursor.moveToFirst()) {
+        if (appDataCursor.moveToFirst()) {
             do {
-                ArrayList<String> list = new Gson().fromJson(appDataCursor.getString(appDataCursor.getColumnIndex(PACKAGE_LIST)), new TypeToken<ArrayList<String>>(){}.getType());
+                ArrayList<String> list = new Gson().fromJson(appDataCursor.getString(appDataCursor.getColumnIndex(PACKAGE_LIST)), new TypeToken<ArrayList<String>>() {
+                }.getType());
                 profileList.add(new Profile(
                         appDataCursor.getString(appDataCursor.getColumnIndex(PROFILE_NAME)),
                         list
                 ));
-            } while(appDataCursor.moveToNext());
+            } while (appDataCursor.moveToNext());
         }
         // Returns true if cursor is moved to the first row successfully
         // Prevents any other Query to be executed after this
