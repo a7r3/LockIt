@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Profile;
 
 import java.util.ArrayList;

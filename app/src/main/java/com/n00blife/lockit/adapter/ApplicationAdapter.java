@@ -39,9 +39,17 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.applicationIcon.setImageDrawable(applicationArrayList.get(position).getApplicationIcon());
-        holder.applicationName.setText(applicationArrayList.get(position).getApplicationName());
-        holder.dostuff(holder, applicationArrayList.get(position), position);
+        // Application List in ProfileCreationActivity
+        if(holder.applicationPackageName != null) {
+            holder.applicationPackageName.setText(applicationArrayList.get(position).getApplicationPackageName());
+            holder.applicationVersion.setText(applicationArrayList.get(position).getApplicationVersion());
+            holder.addItemClick();
+        }
+        // Application in WhiteListRecyclerView
+        if(holder.applicationName != null)
+            holder.applicationName.setText(applicationArrayList.get(position).getApplicationName());
+        // Application list in Profile Layout
+        holder.applicationIcon.setImageBitmap(applicationArrayList.get(position).getApplicationIcon());
     }
 
     @Override
@@ -50,29 +58,31 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
     }
 
     public interface onItemClicked {
-        public void onHolderClick(ViewHolder viewHolder, Application application);
+        public void onHolderClick(int position, Application application);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public ImageView applicationIcon;
-        public TextView applicationName;
+        ImageView applicationIcon;
+        TextView applicationName;
+        TextView applicationPackageName;
+        TextView applicationVersion;
 
         public ViewHolder(View itemView) {
             super(itemView);
             applicationIcon = itemView.findViewById(R.id.application_icon);
             applicationName = itemView.findViewById(R.id.application_name);
+            applicationPackageName = itemView.findViewById(R.id.application_package_name);
+            applicationVersion = itemView.findViewById(R.id.application_version);
         }
 
-        public void dostuff(final ViewHolder holder, final Application application, final int position) {
-            holder.itemView.setOnClickListener(new View.OnClickListener() {
+        public void addItemClick() {
+            itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    application.setPositionInApplicationList(holder.getAdapterPosition());
-                    onItemClicked.onHolderClick(holder, application);
+                    onItemClicked.onHolderClick(getAdapterPosition(), applicationArrayList.get(getAdapterPosition()));
                 }
             });
         }
-
     }
 }

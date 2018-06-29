@@ -6,9 +6,11 @@ import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.n00blife.lockit.model.Application;
+import com.n00blife.lockit.util.ImageUtils;
 
 import java.util.ArrayList;
 
@@ -32,6 +34,7 @@ public class ApplicationDatabase extends SQLiteOpenHelper {
     private final String PACKAGE_NAME_KEY = "package_name";
     private final String APPLICATION_NAME = "app_label";
     private final String APPLICATION_VERSION = "app_version";
+    private final String APPLICATION_ICON = "app_icon";
 
     private ApplicationDatabase(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
@@ -62,7 +65,8 @@ public class ApplicationDatabase extends SQLiteOpenHelper {
                 + ID_KEY + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + PACKAGE_NAME_KEY + " TEXT, "
                 + APPLICATION_NAME + " TEXT, "
-                + APPLICATION_VERSION + " TEXT" +
+                + APPLICATION_VERSION + " TEXT,"
+                + APPLICATION_ICON + " TEXT" +
                 ")";
 
         // Execute above SQL Query
@@ -88,6 +92,7 @@ public class ApplicationDatabase extends SQLiteOpenHelper {
         quoteContentValues.put(APPLICATION_NAME, application.getApplicationName());
         quoteContentValues.put(APPLICATION_VERSION, application.getApplicationVersion());
         quoteContentValues.put(PACKAGE_NAME_KEY, application.getApplicationPackageName());
+        quoteContentValues.put(APPLICATION_ICON, ImageUtils.encodeBitmapToBase64(application.getApplicationIcon()));
         sqLiteDatabase.beginTransaction();
         try {
             // Perform Insert Operation with the above Values
@@ -138,7 +143,7 @@ public class ApplicationDatabase extends SQLiteOpenHelper {
                         appDataCursor.getString(appDataCursor.getColumnIndex(APPLICATION_NAME)),
                         appDataCursor.getString(appDataCursor.getColumnIndex(PACKAGE_NAME_KEY)),
                         appDataCursor.getString(appDataCursor.getColumnIndex(APPLICATION_VERSION)),
-                        null
+                        ImageUtils.decodeBase64ToBitmap(appDataCursor.getString(appDataCursor.getColumnIndex(APPLICATION_ICON)))
                 ));
             } while (appDataCursor.moveToNext());
         }

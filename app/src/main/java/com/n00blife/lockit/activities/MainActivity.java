@@ -27,6 +27,7 @@ import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Profile;
 import com.n00blife.lockit.services.LockService;
 import com.n00blife.lockit.util.Constants;
+import com.n00blife.lockit.util.ImageUtils;
 
 import java.util.ArrayList;
 
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private PackageManager pm;
     private FloatingActionButton createProfileButton;
     private RecyclerView profileListView;
+    private ApplicationDatabase applicationDatabase;
     private ArrayList<Profile> profiles = new ArrayList<>();
     private ProfileAdapter adapter;
 
@@ -52,7 +54,11 @@ public class MainActivity extends AppCompatActivity {
         profileListView = findViewById(R.id.profile_recyclerview);
         profileListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
         profileListView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
-        adapter = new ProfileAdapter(this, profiles, new ProfileAdapter.OnItemClickedListener() {
+        adapter = new ProfileAdapter(this, profiles);
+
+        pm = getPackageManager();
+
+        adapter.setOnItemClickedListener(new ProfileAdapter.OnItemClickedListener() {
             @Override
             public void onItemClick(int position, final Profile profile) {
                 View numberPickerView = LayoutInflater.from(MainActivity.this).inflate(R.layout.dialog_activate_profile, null, false);
@@ -94,46 +100,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        pm = getPackageManager();
-
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        final ApplicationDatabase database = ApplicationDatabase.getInstance(this);
-
-        if(database.getRowCount() == 0) {
-            Observable.fromIterable(pm.queryIntentActivities(mainIntent, 0))
-                    .sorted(new ResolveInfo.DisplayNameComparator(pm))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<ResolveInfo>() {
-                        @Override
-                        public void onSubscribe(Disposable d) {
-                        }
-
-                        @Override
-                        public void onNext(ResolveInfo resolveInfo) {
-                            ActivityInfo info = resolveInfo.activityInfo;
-                            database.addApplication(new Application(
-                                    resolveInfo.loadLabel(pm).toString(),
-                                    info.packageName,
-                                    "0.0.1",
-                                    resolveInfo.loadIcon(pm)
-                            ));
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-
-                        }
-
-                        @Override
-                        public void onComplete() {
-                            Toast.makeText(MainActivity.this, database.getRowCount() + " Applications Installed", Toast.LENGTH_LONG).show();
-                        }
-                    });
-        }
-
         WhiteListedApplicationDatabase whiteListedApplicationDatabase = WhiteListedApplicationDatabase.getInstance(this);
 
         Observable.fromIterable(whiteListedApplicationDatabase.getProfiles())
@@ -147,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onNext(Profile profile) {
-                        Toast.makeText(MainActivity.this, profile.getProfileName(), Toast.LENGTH_LONG).show();
                         profiles.add(profile);
                     }
 

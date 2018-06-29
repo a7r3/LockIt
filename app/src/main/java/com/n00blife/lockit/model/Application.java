@@ -1,5 +1,6 @@
 package com.n00blife.lockit.model;
 
+import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 
 public class Application {
@@ -7,14 +8,18 @@ public class Application {
     private String applicationName;
     private String applicationPackageName;
     private String applicationVersion;
-    private Drawable applicationIcon;
+    private Bitmap applicationIcon;
     private int positionInApplicationList = -1;
 
-    public Application(String applicationName, String applicationPackageName, String applicationVersion, Drawable applicationIcon) {
+    public Application(String applicationName, String applicationPackageName, String applicationVersion, Bitmap applicationIcon) {
         this.applicationName = applicationName;
         this.applicationPackageName = applicationPackageName;
         this.applicationVersion = applicationVersion;
         this.applicationIcon = applicationIcon;
+    }
+
+    public Application() {
+
     }
 
     public int getPositionInApplicationList() {
@@ -29,11 +34,11 @@ public class Application {
         return getApplicationName().compareTo(toBeInserted.getApplicationName()) > 0;
     }
 
-    public Drawable getApplicationIcon() {
+    public Bitmap getApplicationIcon() {
         return applicationIcon;
     }
 
-    public void setApplicationIcon(Drawable applicationIcon) {
+    public void setApplicationIcon(Bitmap applicationIcon) {
         this.applicationIcon = applicationIcon;
     }
 

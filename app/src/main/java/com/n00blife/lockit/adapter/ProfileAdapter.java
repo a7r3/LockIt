@@ -1,17 +1,30 @@
 package com.n00blife.lockit.adapter;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.n00blife.lockit.R;
+import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
+import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Profile;
+import com.n00blife.lockit.util.ImageUtils;
 
 import java.util.ArrayList;
+
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 
 public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder> {
 
@@ -19,9 +32,12 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
     private ArrayList<Profile> profileArrayList;
     private OnItemClickedListener onItemClickedListener;
 
-    public ProfileAdapter(Context context, ArrayList<Profile> profileArrayList, OnItemClickedListener onItemClickedListener) {
+    public ProfileAdapter(Context context, ArrayList<Profile> profileArrayList) {
         this.context = context;
         this.profileArrayList = profileArrayList;
+    }
+
+    public void setOnItemClickedListener(OnItemClickedListener onItemClickedListener) {
         this.onItemClickedListener = onItemClickedListener;
     }
 
@@ -44,11 +60,13 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        private TextView profileName;
+        TextView profileName;
+        RecyclerView appsList;
 
         ViewHolder(View itemView) {
             super(itemView);
             profileName = itemView.findViewById(R.id.profile_name);
+            appsList = itemView.findViewById(R.id.profile_apps_list);
         }
 
         public void addClickListener() {
@@ -58,8 +76,19 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
                     onItemClickedListener.onItemClick(getAdapterPosition(), profileArrayList.get(getAdapterPosition()));
                 }
             });
+            ArrayList<Application> applications = new ArrayList<>();
+            try {
+                for(String pkg : profileArrayList.get(getAdapterPosition()).getPackageList()) {
+                    Application a = new Application();
+                    a.setApplicationIcon(ImageUtils.drawableToBitmap(context.getPackageManager().getApplicationIcon(pkg)));
+                    applications.add(a);
+                }
+            } catch (Exception e) { e.printStackTrace(); }
+            appsList.setAdapter(new ApplicationAdapter(context, applications, R.layout.app_item_grid_mini));
+            appsList.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false));
         }
     }
+
 
     public interface OnItemClickedListener {
         public void onItemClick(int position, Profile profile);
