@@ -11,13 +11,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
-        android:paddingBottom="8dp"
-        android:paddingEnd="8dp"
-        android:paddingStart="12dp"
-        android:paddingTop="16dp"
+        android:padding="8dp"
         android:text="Select Applications"
         android:textColor="#FFF"
-        android:textSize="28sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/subtitle"
         app:layout_constraintEnd_toEndOf="parent"
@@ -30,37 +27,47 @@
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
         android:paddingBottom="8dp"
-        android:paddingEnd="12dp"
-        android:paddingStart="12dp"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
         android:text="To be used by the Child"
         android:textColor="#80ffffff"
-        app:layout_constraintBottom_toTopOf="@id/whitelist_card"
+        app:layout_constraintBottom_toTopOf="@id/profile_name_layout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/title" />
 
+    <android.support.design.widget.TextInputLayout
+        app:layout_constraintTop_toBottomOf="@id/subtitle"
+        app:layout_constraintBottom_toTopOf="@id/whitelist_card"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/profile_name_layout"
+        android:background="@color/colorPrimary"
+        android:visibility="gone"
+        android:padding="8dp"
+        app:hintAnimationEnabled="true"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/profile_name_edittext"
+            android:inputType="text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Profile Name"/>
+
+    </android.support.design.widget.TextInputLayout>
 
     <android.support.constraint.ConstraintLayout
+        android:visibility="gone"
         android:id="@+id/whitelist_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/colorPrimary"
-        android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@id/whitelist_card"
+        app:layout_constraintBottom_toTopOf="@id/apps_list"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/subtitle">
-
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:background="#40FFFFFF"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/profile_name_layout">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/whitelisted_apps"
@@ -73,7 +80,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/add_to_whitelist_button"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/divider" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/cancel_button"
@@ -126,6 +133,5 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/progressbar" />
-
 
 </android.support.constraint.ConstraintLayout>

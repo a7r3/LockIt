@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -60,7 +61,7 @@ public class WhiteListedApplicationDatabase extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         String CREATE_DB = "CREATE TABLE " + WHITELISTED_APP_LIST_TABLE +
                 "("
-                + PROFILE_NAME + " TEXT, "
+                + PROFILE_NAME + " TEXT UNIQUE, "
                 + PACKAGE_LIST + " TEXT" +
                 ")";
 
@@ -79,7 +80,7 @@ public class WhiteListedApplicationDatabase extends SQLiteOpenHelper {
         }
     }
 
-    public void createProfile(String profileName, ArrayList<String> packageList) {
+    public int createProfile(String profileName, ArrayList<String> packageList) {
         SQLiteDatabase sqLiteDatabase = getWritableDatabase();
 
         ContentValues quoteContentValues = new ContentValues();
@@ -94,11 +95,13 @@ public class WhiteListedApplicationDatabase extends SQLiteOpenHelper {
             sqLiteDatabase.insertOrThrow(WHITELISTED_APP_LIST_TABLE, null, quoteContentValues);
             // Set current transaction as successful
             sqLiteDatabase.setTransactionSuccessful();
-        } catch (Exception e) {
+        } catch (SQLiteConstraintException e) {
             e.printStackTrace();
+            return -1;
         } finally {
             sqLiteDatabase.endTransaction();
         }
+        return 0;
     }
 
     // Required arg -> ID of the quote
@@ -108,7 +111,7 @@ public class WhiteListedApplicationDatabase extends SQLiteOpenHelper {
         try {
             // Delete a row by its ID (Primary Key)
             // args -> TableName, Clause (condition), Arguments (I've put nothing)
-            sqLiteDatabase.delete(WHITELISTED_APP_LIST_TABLE, PROFILE_NAME + "=" + profileName, null);
+            sqLiteDatabase.delete(WHITELISTED_APP_LIST_TABLE, PROFILE_NAME + "='" + profileName + "'", null);
             Log.d(TAG, "Removed App " + profileName + " successfully");
             sqLiteDatabase.setTransactionSuccessful();
         } catch (Exception e) {
@@ -161,6 +164,7 @@ public class WhiteListedApplicationDatabase extends SQLiteOpenHelper {
         sqLiteDatabase.endTransaction();
         return profileList;
     }
+
 
     public long getRowCount() {
         return DatabaseUtils.queryNumEntries(getReadableDatabase(), WHITELISTED_APP_LIST_TABLE);

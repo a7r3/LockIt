@@ -43,7 +43,6 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
         if (holder.applicationPackageName != null) {
             holder.applicationPackageName.setText(applicationArrayList.get(position).getApplicationPackageName());
             holder.applicationVersion.setText(applicationArrayList.get(position).getApplicationVersion());
-            holder.addItemClick();
         }
         // Application in WhiteListRecyclerView
         if (holder.applicationName != null)
@@ -74,15 +73,15 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
             applicationName = itemView.findViewById(R.id.application_name);
             applicationPackageName = itemView.findViewById(R.id.application_package_name);
             applicationVersion = itemView.findViewById(R.id.application_version);
+            if(layoutResId != R.layout.app_item_grid_mini) {
+                itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onItemClicked.onHolderClick(getAdapterPosition(), applicationArrayList.get(getAdapterPosition()));
+                    }
+                });
+            }
         }
 
-        public void addItemClick() {
-            itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onItemClicked.onHolderClick(getAdapterPosition(), applicationArrayList.get(getAdapterPosition()));
-                }
-            });
-        }
     }
 }

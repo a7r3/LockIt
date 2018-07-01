@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
+import android.support.design.widget.TextInputLayout;
 import android.support.transition.TransitionManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,6 +31,7 @@ import java.util.ArrayList;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.android.plugins.RxAndroidPlugins;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -43,6 +46,8 @@ public class ProfileCreationActivity extends AppCompatActivity {
     private ApplicationAdapter applicationAdapter;
     private ApplicationAdapter whitelistedApplicationAdapter;
     private RecyclerView applicationListRecycler;
+    private EditText profileNameInput;
+    private TextInputLayout profileName;
     private ConstraintLayout whiteListCard;
     private ApplicationDatabase applicationDatabase;
     private Button addButton;
@@ -60,6 +65,8 @@ public class ProfileCreationActivity extends AppCompatActivity {
         Intent mainIntent = new Intent(Intent.ACTION_MAIN);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
+        profileName = findViewById(R.id.profile_name_layout);
+        profileNameInput = findViewById(R.id.profile_name_edittext);
         progressBar = findViewById(R.id.progressbar);
         progressBar.setVisibility(View.VISIBLE);
         applicationListRecycler = findViewById(R.id.apps_list);
@@ -72,6 +79,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 applicationAdapter.notifyItemRemoved(position);
                 TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
                 whiteListCard.setVisibility(View.VISIBLE);
+                profileName.setVisibility(View.VISIBLE);
                 whitelistedApplicationList.add(application);
                 whitelistedApplicationAdapter.notifyItemInserted(whitelistedApplicationList.size() - 1);
             }
@@ -102,15 +110,30 @@ public class ProfileCreationActivity extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String profileName = profileNameInput.getText().toString();
+
+                if(profileName.equals("")) {
+                    profileNameInput.setError("Profile Name cannot be empty");
+                    return;
+                }
+
                 ArrayList<String> pkgList = new ArrayList<>();
-                Log.d(TAG, "Creating Profile " + "Foo");
+
+                Log.d(TAG, "Creating Profile " + profileName);
+
                 for (Application a : whitelistedApplicationList) {
                     pkgList.add(a.getApplicationPackageName());
                 }
-                // Adding Default Launcher to the whitelist
-                WhiteListedApplicationDatabase.getInstance(ProfileCreationActivity.this).createProfile("DefaultProfile", pkgList);
-                startActivity(new Intent(ProfileCreationActivity.this, MainActivity.class));
-                finish();
+
+                int status = WhiteListedApplicationDatabase.getInstance(ProfileCreationActivity.this).createProfile(profileName, pkgList);
+
+                if(status == -1) {
+                    profileNameInput.setError("This profile already exists");
+                } else {
+                    Toast.makeText(ProfileCreationActivity.this,
+                            "Profile '" + profileName + "' created", Toast.LENGTH_LONG).show();
+                    finish();
+                }
             }
         });
 
@@ -120,8 +143,10 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 whitelistedApplicationList.clear();
                 applicationArrayList.clear();
                 applicationAdapter.notifyDataSetChanged();
+                applicationArrayList = applicationDatabase.getAllApplications();
                 TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
                 whiteListCard.setVisibility(View.GONE);
+                profileName.setVisibility(View.GONE);
             }
         });
 

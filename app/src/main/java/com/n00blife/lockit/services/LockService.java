@@ -6,8 +6,10 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build;
@@ -22,6 +24,7 @@ import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
+import com.n00blife.lockit.receiver.PackageBroadcastReceiver;
 import com.n00blife.lockit.util.Constants;
 
 import java.util.ArrayList;
@@ -45,6 +48,7 @@ public class LockService extends Service {
     private ArrayList<String> whitelistedApplicationPackages;
     private Observable<Long> timerObservable;
     private Observer<Long> timerObserver;
+    private PackageBroadcastReceiver packageBroadcastReceiver;
 
     @Nullable
     @Override
@@ -69,6 +73,14 @@ public class LockService extends Service {
 
         Log.d(TAG, "Apps: " + allApplicationPackages.size());
         Log.d(TAG, "WhiteApps: " + whitelistedApplicationPackages.size());
+
+        packageBroadcastReceiver = new PackageBroadcastReceiver();
+        IntentFilter packageFilter = new IntentFilter();
+        packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        packageFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+
+        registerReceiver(packageBroadcastReceiver, packageFilter);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -186,6 +198,7 @@ public class LockService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(packageBroadcastReceiver);
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
         stopSelf();

@@ -44,7 +44,7 @@
         <ImageView
             android:layout_width="104dp"
             android:layout_height="104dp"
-            android:src="@drawable/ic_002_addiction"
+            android:src="@drawable/addiction"
             android:tint="#616161" />
 
         <TextView

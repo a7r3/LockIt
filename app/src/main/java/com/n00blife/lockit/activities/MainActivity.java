@@ -2,6 +2,7 @@ package com.n00blife.lockit.activities;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -23,6 +24,7 @@ import com.n00blife.lockit.adapter.ProfileAdapter;
 import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Profile;
+import com.n00blife.lockit.receiver.PackageBroadcastReceiver;
 import com.n00blife.lockit.services.LockService;
 import com.n00blife.lockit.util.Constants;
 
@@ -43,10 +45,13 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Profile> profiles = new ArrayList<>();
     private ProfileAdapter adapter;
     private LinearLayout noProfileContainer;
+    private PackageBroadcastReceiver packageBroadcastReceiver;
 
-    private void showNoProfileContainer() {
-        noProfileContainer.setVisibility(View.VISIBLE);
-        profileListView.setVisibility(View.GONE);
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(packageBroadcastReceiver != null)
+            unregisterReceiver(packageBroadcastReceiver);
     }
 
     @Override
@@ -54,7 +59,16 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        packageBroadcastReceiver = new PackageBroadcastReceiver();
+        IntentFilter packageFilter = new IntentFilter();
+        packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        packageFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+
+        registerReceiver(packageBroadcastReceiver, packageFilter);
+
         noProfileContainer = findViewById(R.id.no_profile_container);
+        noProfileContainer.setVisibility(View.GONE);
 
         profileListView = findViewById(R.id.profile_recyclerview);
         profileListView.addItemDecoration(new DividerItemDecoration(this, DividerItemDecoration.VERTICAL));
@@ -62,9 +76,6 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ProfileAdapter(this, profiles);
 
         pm = getPackageManager();
-
-        if (profiles.size() == 0)
-            showNoProfileContainer();
 
         adapter.setOnItemClickedListener(new ProfileAdapter.OnItemClickedListener() {
             @Override
@@ -84,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
                                 ContextCompat.startForegroundService(MainActivity.this, lockServiceIntent);
                             }
                         })
-                        .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
 
@@ -104,7 +115,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainActivity.this, ProfileCreationActivity.class));
-                finish();
+            }
+        });
+
+        adapter.setOnListModifiedListener(new ProfileAdapter.OnListModifiedListener() {
+            @Override
+            public void onListModified(int currentSize) {
+                if(currentSize == 0) {
+                    noProfileContainer.setVisibility(View.VISIBLE);
+                    profileListView.setVisibility(View.GONE);
+                } else {
+                    noProfileContainer.setVisibility(View.GONE);
+                    profileListView.setVisibility(View.VISIBLE);
+                }
             }
         });
 
@@ -131,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete() {
-                        Toast.makeText(MainActivity.this, "ProfileComplete", Toast.LENGTH_LONG).show();
+                        Toast.makeText(MainActivity.this, "ProfileComplete " + profiles.size(), Toast.LENGTH_LONG).show();
                         adapter.notifyDataSetChanged();
                     }
                 });
