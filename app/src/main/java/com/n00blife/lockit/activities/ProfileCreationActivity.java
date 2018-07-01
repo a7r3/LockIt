@@ -3,8 +3,8 @@ package com.n00blife.lockit.activities;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
-import android.media.Image;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.transition.TransitionManager;
@@ -23,16 +23,21 @@ import android.widget.Toast;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
 import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
-import java.util.ArrayList;
+import org.reactivestreams.Subscription;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import io.reactivex.FlowableSubscriber;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
-import io.reactivex.android.plugins.RxAndroidPlugins;
+import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -55,6 +60,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
     private TextView cancelButton;
     private PackageManager pm;
     private ProgressBar progressBar;
+    private  RoomApplicationDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,19 +78,6 @@ public class ProfileCreationActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         applicationListRecycler = findViewById(R.id.apps_list);
         applicationListRecycler.addItemDecoration(new MarginDividerItemDecoration(this));
-        applicationAdapter = new ApplicationAdapter(this, applicationArrayList, R.layout.app_item);
-        applicationAdapter.setOnItemClicked(new ApplicationAdapter.onItemClicked() {
-            @Override
-            public void onHolderClick(int position, Application application) {
-                applicationArrayList.remove(application);
-                applicationAdapter.notifyItemRemoved(position);
-                TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
-                whiteListCard.setVisibility(View.VISIBLE);
-                profileName.setVisibility(View.VISIBLE);
-                whitelistedApplicationList.add(application);
-                whitelistedApplicationAdapter.notifyItemInserted(whitelistedApplicationList.size() - 1);
-            }
-        });
 
         applicationListRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         applicationListRecycler.setAdapter(applicationAdapter);
@@ -153,40 +146,105 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
         applicationDatabase = ApplicationDatabase.getInstance(this);
 
+        db = RoomApplicationDatabase.getInstance(this);
         // Retrieve a list of installed applications if this App is opened for the first time
         // One-Time process
-        if (applicationDatabase.getRowCount() == 0)
-            retrieveApplicationList();
-        else
-            retrieveApplicationListFromDatabase();
-
-    }
-
-    public void retrieveApplicationListFromDatabase() {
-        Observable.fromIterable(ApplicationDatabase.getInstance(this).getAllApplications())
+        db.applicationDao().getNumberOfRows()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Application>() {
+                .subscribe(new SingleObserver<Integer>() {
                     @Override
                     public void onSubscribe(Disposable d) {
-                        progressBar.setVisibility(View.VISIBLE);
+
                     }
 
                     @Override
-                    public void onNext(Application application) {
-                        applicationArrayList.add(application);
-                        applicationAdapter.notifyItemInserted(applicationArrayList.size());
+                    public void onSuccess(Integer integer) {
+                        Log.d(TAG, "c->" + integer);
+                        if (integer == 0)
+                            retrieveApplicationList();
+                        else
+                            retrieveApplicationListFromDatabase();
                     }
 
                     @Override
                     public void onError(Throwable e) {
 
                     }
+                });
+
+    }
+
+    public void retrieveApplicationListFromDatabase() {
+//        Observable.fromIterable(ApplicationDatabase.getInstance(this).getAllApplications())
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Observer<Application>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                        progressBar.setVisibility(View.VISIBLE);
+//                    }
+//
+//                    @Override
+//                    public void onNext(Application application) {
+//                        applicationArrayList.add(application);
+//                        applicationAdapter.notifyItemInserted(applicationArrayList.size());
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//                        progressBar.setVisibility(View.GONE);
+//                        Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
+//                    }
+//                });
+//
+
+
+        applicationListRecycler.setVisibility(View.GONE);
+        db.applicationDao().getApplications()
+                        .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new FlowableSubscriber<List<Application>>() {
+                    @Override
+                    public void onSubscribe(Subscription s) {
+                        Log.d(TAG, "1");
+                        s.request(Long.MAX_VALUE);
+                    }
+
+                    @Override
+                    public void onNext(List<Application> applications) {
+                        Log.d(TAG, "1");
+                        progressBar.setVisibility(View.GONE);
+                        applicationListRecycler.setVisibility(View.VISIBLE);
+                        applicationArrayList.addAll(applications);
+                        applicationAdapter = new ApplicationAdapter(ProfileCreationActivity.this, applicationArrayList, R.layout.app_item);
+                        applicationAdapter.setOnItemClicked(new ApplicationAdapter.onItemClicked() {
+                            @Override
+                            public void onHolderClick(int position, Application application) {
+                                applicationArrayList.remove(application);
+                                applicationAdapter.notifyItemRemoved(position);
+                                TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
+                                whiteListCard.setVisibility(View.VISIBLE);
+                                profileName.setVisibility(View.VISIBLE);
+                                whitelistedApplicationList.add(application);
+                                whitelistedApplicationAdapter.notifyItemInserted(whitelistedApplicationList.size() - 1);
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onError(Throwable t) {
+
+                    }
 
                     @Override
                     public void onComplete() {
-                        progressBar.setVisibility(View.GONE);
-                        Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
+                        Log.d(TAG, "3");
                     }
                 });
     }
@@ -200,7 +258,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
         Observable.fromIterable(pm.queryIntentActivities(mainIntent, 0))
                 .sorted(new ResolveInfo.DisplayNameComparator(pm))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
                 .subscribe(new Observer<ResolveInfo>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -217,9 +275,8 @@ public class ProfileCreationActivity extends AppCompatActivity {
                                     pm.getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
                                     ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(pm)))
                             );
-                            applicationDatabase.addApplication(a);
-                            // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (1)
-                            applicationArrayList.add(a);
+                            Log.d(TAG, "Adding App " + a.getApplicationPackageName());
+                            db.applicationDao().addApplication(a);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -232,12 +289,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete() {
-                        // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (2)
-                        applicationAdapter.notifyDataSetChanged();
-                        // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (3)
-                        applicationListRecycler.setVisibility(View.VISIBLE);
-                        // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (4)
-                        progressBar.setVisibility(View.GONE);
+                        Log.d(TAG, "RXComplete");
                     }
                 });
     }

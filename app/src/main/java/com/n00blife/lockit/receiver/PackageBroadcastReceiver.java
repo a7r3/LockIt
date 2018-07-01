@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.graphics.Bitmap;
 
 import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.model.Application;
@@ -27,7 +26,7 @@ public class PackageBroadcastReceiver extends BroadcastReceiver {
                 try {
                     ApplicationInfo installedAppInfo = context.getPackageManager().getApplicationInfo(installedPackage, 0);
                     String appLabel = installedAppInfo.loadLabel(context.getPackageManager()).toString();
-                    Bitmap appIcon = ImageUtils.drawableToBitmap(installedAppInfo.loadIcon(context.getPackageManager()));
+                    String appIcon = ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(installedAppInfo.loadIcon(context.getPackageManager())));
                     String appVersion = context.getPackageManager().getPackageInfo(installedPackage, 0).versionName;
                     database.addApplication(new Application(
                             appLabel,

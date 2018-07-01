@@ -9,7 +9,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.n00blife.lockit.model.Application;
-import com.n00blife.lockit.util.ImageUtils;
 
 import java.util.ArrayList;
 
