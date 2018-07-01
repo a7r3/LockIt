@@ -27,13 +27,13 @@ public class PackageBroadcastReceiver extends BroadcastReceiver {
                 try {
                     ApplicationInfo installedAppInfo = context.getPackageManager().getApplicationInfo(installedPackage, 0);
                     String appLabel = installedAppInfo.loadLabel(context.getPackageManager()).toString();
-                    Bitmap appIcon = ImageUtils.drawableToBitmap(installedAppInfo.loadIcon(context.getPackageManager()));
+                    String appIcon64 = ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(installedAppInfo.loadIcon(context.getPackageManager())));
                     String appVersion = context.getPackageManager().getPackageInfo(installedPackage, 0).versionName;
                     database.addApplication(new Application(
                             appLabel,
                             installedPackage,
                             appVersion,
-                            appIcon
+                            appIcon64
                     ));
                 } catch (Exception e) {
                     e.printStackTrace();
