@@ -3,6 +3,7 @@ package com.n00blife.lockit.activities;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.media.Image;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputLayout;
@@ -214,7 +215,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
                                     resolveInfo.loadLabel(pm).toString(),
                                     resolveInfo.activityInfo.packageName,
                                     pm.getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
-                                    ImageUtils.drawableToBitmap(resolveInfo.loadIcon(pm))
+                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(pm)))
                             );
                             applicationDatabase.addApplication(a);
                             // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (1)

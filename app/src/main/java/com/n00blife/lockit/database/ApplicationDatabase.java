@@ -91,7 +91,7 @@ public class ApplicationDatabase extends SQLiteOpenHelper {
         quoteContentValues.put(APPLICATION_NAME, application.getApplicationName());
         quoteContentValues.put(APPLICATION_VERSION, application.getApplicationVersion());
         quoteContentValues.put(PACKAGE_NAME_KEY, application.getApplicationPackageName());
-        quoteContentValues.put(APPLICATION_ICON, ImageUtils.encodeBitmapToBase64(application.getApplicationIcon()));
+        quoteContentValues.put(APPLICATION_ICON, application.getApplicationIconEncoded());
         sqLiteDatabase.beginTransaction();
         try {
             // Perform Insert Operation with the above Values
@@ -142,7 +142,7 @@ public class ApplicationDatabase extends SQLiteOpenHelper {
                         appDataCursor.getString(appDataCursor.getColumnIndex(APPLICATION_NAME)),
                         appDataCursor.getString(appDataCursor.getColumnIndex(PACKAGE_NAME_KEY)),
                         appDataCursor.getString(appDataCursor.getColumnIndex(APPLICATION_VERSION)),
-                        ImageUtils.decodeBase64ToBitmap(appDataCursor.getString(appDataCursor.getColumnIndex(APPLICATION_ICON)))
+                        appDataCursor.getString(appDataCursor.getColumnIndex(APPLICATION_ICON))
                 ));
             } while (appDataCursor.moveToNext());
         }

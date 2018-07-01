@@ -7,39 +7,31 @@ public class Application {
     private String applicationName;
     private String applicationPackageName;
     private String applicationVersion;
-    private Bitmap applicationIcon;
-    private int positionInApplicationList = -1;
+    private String applicationIconEncoded;
 
-    public Application(String applicationName, String applicationPackageName, String applicationVersion, Bitmap applicationIcon) {
+    public Application(String applicationName, String applicationPackageName, String applicationVersion, String applicationIconEncoded) {
         this.applicationName = applicationName;
         this.applicationPackageName = applicationPackageName;
         this.applicationVersion = applicationVersion;
-        this.applicationIcon = applicationIcon;
+        this.applicationIconEncoded = applicationIconEncoded;
+    }
+
+    public String getApplicationIconEncoded() {
+        return applicationIconEncoded;
+    }
+
+    public void setApplicationIconEncoded(String applicationIconEncoded) {
+        this.applicationIconEncoded = applicationIconEncoded;
     }
 
     public Application() {
 
     }
 
-    public int getPositionInApplicationList() {
-        return positionInApplicationList;
-    }
-
-    public void setPositionInApplicationList(int positionInApplicationList) {
-        this.positionInApplicationList = positionInApplicationList;
-    }
-
     public boolean isAfter(Application toBeInserted) {
         return getApplicationName().compareTo(toBeInserted.getApplicationName()) > 0;
     }
 
-    public Bitmap getApplicationIcon() {
-        return applicationIcon;
-    }
-
-    public void setApplicationIcon(Bitmap applicationIcon) {
-        this.applicationIcon = applicationIcon;
-    }
 
     public String getApplicationName() {
         return applicationName;

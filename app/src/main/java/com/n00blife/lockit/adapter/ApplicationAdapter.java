@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.model.Application;
+import com.n00blife.lockit.util.ImageUtils;
 
 import java.util.ArrayList;
 
@@ -48,7 +49,7 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
         if (holder.applicationName != null)
             holder.applicationName.setText(applicationArrayList.get(position).getApplicationName());
         // Application list in Profile Layout
-        holder.applicationIcon.setImageBitmap(applicationArrayList.get(position).getApplicationIcon());
+        holder.applicationIcon.setImageBitmap(ImageUtils.decodeBase64ToBitmap(applicationArrayList.get(position).getApplicationIconEncoded()));
     }
 
     @Override
