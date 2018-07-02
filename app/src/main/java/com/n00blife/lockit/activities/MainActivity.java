@@ -50,8 +50,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        if(packageBroadcastReceiver != null)
+        try {
             unregisterReceiver(packageBroadcastReceiver);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @Override

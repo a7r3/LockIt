@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.graphics.Bitmap;
 
 import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.model.Application;

@@ -47,7 +47,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
         try {
             for (String pkg : profileArrayList.get(holder.getAdapterPosition()).getPackageList()) {
                 Application a = new Application();
-                a.setApplicationIcon(ImageUtils.drawableToBitmap(context.getPackageManager().getApplicationIcon(pkg)));
+                a.setApplicationIconEncoded(ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(context.getPackageManager().getApplicationIcon(pkg))));
                 applications.add(a);
             }
         } catch (Exception e) {

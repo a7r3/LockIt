@@ -142,9 +142,10 @@ public class ProfileCreationActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 whitelistedApplicationList.clear();
+                // FIXME This is bad ;-;
                 applicationArrayList.clear();
+                applicationArrayList.addAll(applicationDatabase.getAllApplications());
                 applicationAdapter.notifyDataSetChanged();
-                applicationArrayList = applicationDatabase.getAllApplications();
                 TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
                 whiteListCard.setVisibility(View.GONE);
                 profileName.setVisibility(View.GONE);
@@ -169,6 +170,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 .subscribe(new Observer<Application>() {
                     @Override
                     public void onSubscribe(Disposable d) {
+                        applicationListRecycler.setVisibility(View.GONE);
                         progressBar.setVisibility(View.VISIBLE);
                     }
 
@@ -186,6 +188,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
                     @Override
                     public void onComplete() {
                         progressBar.setVisibility(View.GONE);
+                        applicationListRecycler.setVisibility(View.VISIBLE);
                         Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
                     }
                 });
