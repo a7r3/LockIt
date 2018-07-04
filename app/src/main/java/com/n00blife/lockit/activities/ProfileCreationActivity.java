@@ -154,12 +154,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
         applicationDatabase = ApplicationDatabase.getInstance(this);
 
-        // Retrieve a list of installed applications if this App is opened for the first time
-        // One-Time process
-        if (applicationDatabase.getRowCount() == 0)
-            retrieveApplicationList();
-        else
-            retrieveApplicationListFromDatabase();
+        retrieveApplicationListFromDatabase();
 
     }
 
@@ -190,57 +185,6 @@ public class ProfileCreationActivity extends AppCompatActivity {
                         progressBar.setVisibility(View.GONE);
                         applicationListRecycler.setVisibility(View.VISIBLE);
                         Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
-                    }
-                });
-    }
-
-    // TODO Do this retrieval during the start of the Application Itself
-    public void retrieveApplicationList() {
-
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        Observable.fromIterable(pm.queryIntentActivities(mainIntent, 0))
-                .sorted(new ResolveInfo.DisplayNameComparator(pm))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ResolveInfo>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        progressBar.setVisibility(View.VISIBLE);
-                        applicationListRecycler.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onNext(ResolveInfo resolveInfo) {
-                        try {
-                            Application a = new Application(
-                                    resolveInfo.loadLabel(pm).toString(),
-                                    resolveInfo.activityInfo.packageName,
-                                    pm.getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
-                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(pm)))
-                            );
-                            applicationDatabase.addApplication(a);
-                            // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (1)
-                            applicationArrayList.add(a);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (2)
-                        applicationAdapter.notifyDataSetChanged();
-                        // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (3)
-                        applicationListRecycler.setVisibility(View.VISIBLE);
-                        // TODO Remove this call when moving this method out of this Activity (As mentioned in above TODO (4)
-                        progressBar.setVisibility(View.GONE);
                     }
                 });
     }

@@ -2,99 +2,27 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/main_title"
+    <android.support.v7.widget.Toolbar
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:paddingTop="8dp"
-        android:paddingStart="8dp"
+        app:title="@string/app_name"
+        app:titleTextColor="#fff"
         android:background="@color/colorPrimary"
-        android:text="Profiles"
-        android:textColor="#fff"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/main_subtitle"
-        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimary"
-        android:padding="8dp"
-        android:text="Select a Profile, Set a Timer, and Activate it!"
-        android:textSize="16sp"
-        android:textColor="#f0f0f0"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/app_toolbar"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/main_title" />
-
-    <LinearLayout
-        android:id="@+id/no_profile_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@id/main_navbar"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/main_subtitle">
+        app:layout_constraintTop_toTopOf="parent"/>
 
-        <ImageView
-            android:layout_width="104dp"
-            android:layout_height="104dp"
-            android:src="@drawable/addiction"
-            android:tint="#616161" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:fontFamily="monospace"
-            android:text="Don't let this happen!"
-            android:textColor="#616161"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:paddingTop="8dp"
-            android:text="Control your child's Smart-phone usage by creating a Profile"
-            android:textSize="16sp"
-            android:textStyle="italic" />
-
-    </LinearLayout>
-
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/profile_recyclerview"
+    <FrameLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
-        tools:listitem="@layout/profile_item"
+        app:layout_constraintTop_toBottomOf="@id/app_toolbar"
         app:layout_constraintBottom_toTopOf="@id/main_navbar"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:id="@+id/main_fragment_layout"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/main_subtitle" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/create_profile_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_add_black_24dp"
-        android:tint="#fff"
-        app:fabSize="normal"
-        app:layout_constraintBottom_toTopOf="@id/main_navbar"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:useCompatPadding="true" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <android.support.design.widget.BottomNavigationView
         android:layout_width="match_parent"
