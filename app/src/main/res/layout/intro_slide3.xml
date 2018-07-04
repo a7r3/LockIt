@@ -25,7 +25,7 @@
         android:id="@+id/intro_image"
         android:layout_height="104dp"
         android:layout_width="104dp"
-        android:src="@drawable/ic_timelapse_black_24dp"
+        android:src="@drawable/ic_timelapse"
         android:tint="#fff"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

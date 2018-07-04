@@ -80,7 +80,7 @@
             android:text="Get Started"
             android:visibility="gone"
             android:id="@+id/get_started_button"
-            android:drawableRight="@drawable/ic_arrow_forward_black_24dp"
+            android:drawableRight="@drawable/ic_arrow_forward"
             style="@style/Base.Widget.AppCompat.Button.Colored"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

@@ -1,20 +1,13 @@
 package com.n00blife.lockit.util;
 
-import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.VectorDrawable;
-import android.graphics.drawable.shapes.RectShape;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -33,7 +26,7 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
     public ItemSwipeListener(Context context) {
         super(0, LEFT);
         this.context = context;
-        deleteDrawable = ContextCompat.getDrawable(context, R.drawable.ic_delete_black_24dp);
+        deleteDrawable = ContextCompat.getDrawable(context, R.drawable.ic_delete);
     }
 
     @Override

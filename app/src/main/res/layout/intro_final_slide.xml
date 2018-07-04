@@ -26,7 +26,7 @@
         android:layout_height="104dp"
         android:layout_width="104dp"
         android:tint="#fff"
-        android:src="@drawable/ic_insert_emoticon_black_24dp"
+        android:src="@drawable/ic_insert_emoticon"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
