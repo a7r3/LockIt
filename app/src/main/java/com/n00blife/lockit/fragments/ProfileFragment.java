@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -36,6 +37,9 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+
+import static android.support.v7.widget.helper.ItemTouchHelper.LEFT;
+import static android.support.v7.widget.helper.ItemTouchHelper.RIGHT;
 
 public class ProfileFragment extends Fragment {
 
@@ -139,17 +143,21 @@ public class ProfileFragment extends Fragment {
         ItemSwipeListener listener = new ItemSwipeListener(getContext()) {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                WhiteListedApplicationDatabase
-                        .getInstance(getContext())
-                        .deleteProfile(profiles.get(viewHolder.getAdapterPosition()).getProfileName());
-                profiles.remove(viewHolder.getAdapterPosition());
-                adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
-                if (adapter.profileArrayList.size() == 0) {
-                    noProfileContainer.setVisibility(View.VISIBLE);
-                    profileListView.setVisibility(View.GONE);
-                } else {
-                    noProfileContainer.setVisibility(View.GONE);
-                    profileListView.setVisibility(View.VISIBLE);
+                if(direction == LEFT) {
+                    WhiteListedApplicationDatabase
+                            .getInstance(getContext())
+                            .deleteProfile(profiles.get(viewHolder.getAdapterPosition()).getProfileName());
+                    profiles.remove(viewHolder.getAdapterPosition());
+                    adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
+                    if (adapter.profileArrayList.size() == 0) {
+                        noProfileContainer.setVisibility(View.VISIBLE);
+                        profileListView.setVisibility(View.GONE);
+                    } else {
+                        noProfileContainer.setVisibility(View.GONE);
+                        profileListView.setVisibility(View.VISIBLE);
+                    }
+                } else if(direction == RIGHT) {
+                    adapter.notifyItemChanged(viewHolder.getAdapterPosition());
                 }
             }
         };

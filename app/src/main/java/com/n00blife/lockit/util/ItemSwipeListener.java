@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
@@ -16,18 +17,19 @@ import android.view.View;
 import com.n00blife.lockit.R;
 
 import static android.support.v7.widget.helper.ItemTouchHelper.LEFT;
+import static android.support.v7.widget.helper.ItemTouchHelper.RIGHT;
 
 public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
 
     private ColorDrawable colorDrawable = new ColorDrawable();
-    private Context context;
     private Drawable deleteDrawable;
+    private Drawable activateDrawable;
     private Paint clearPaint = new Paint();
 
     public ItemSwipeListener(Context context) {
-        super(0, LEFT);
-        this.context = context;
+        super(0, LEFT | RIGHT);
         deleteDrawable = ContextCompat.getDrawable(context, R.drawable.ic_delete);
+        activateDrawable = ContextCompat.getDrawable(context, R.drawable.ic_check);
     }
 
     @Override
@@ -41,8 +43,14 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
     }
 
     @Override
+    public float getSwipeThreshold(RecyclerView.ViewHolder viewHolder) {
+        return 0.5f;
+    }
+
+    @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         View itemView = viewHolder.itemView;
+
         int itemViewHeight = itemView.getBottom() - itemView.getTop();
         boolean isCanceled = dX == 0f && isCurrentlyActive;
 
@@ -53,29 +61,42 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
             return;
         }
 
-        colorDrawable.setColor(Color.parseColor("#F44336"));
+        Drawable someDrawable;
+
+        someDrawable = activateDrawable;
+        colorDrawable.setColor(Color.parseColor("#4CAF50"));
+
+        int deleteIconTop = itemView.getTop() + (itemViewHeight - someDrawable.getIntrinsicHeight()) / 2;
+        int deleteIconMargin = (itemViewHeight - someDrawable.getIntrinsicHeight()) / 2;
+        int deleteIconBottom = deleteIconTop + someDrawable.getIntrinsicHeight();
+
+        int deleteIconLeft = itemView.getLeft() + deleteIconMargin;
+        int deleteIconRight = itemView.getLeft() + deleteIconMargin + someDrawable.getIntrinsicWidth();
+
+        if(dX < 0) {
+            someDrawable = deleteDrawable;
+            colorDrawable.setColor(Color.parseColor("#F44336"));
+            deleteIconLeft = itemView.getRight() - deleteIconMargin - someDrawable.getIntrinsicWidth();
+            deleteIconRight = itemView.getRight() - deleteIconMargin;
+        }
+
         colorDrawable.setBounds(
-                itemView.getRight() + (int) dX,
+                (dX < 0) ? itemView.getRight() + (int) dX : itemView.getLeft(),
                 itemView.getTop(),
-                itemView.getRight(),
+                (dX < 0) ? itemView.getRight() : itemView.getLeft() + (int) dX,
                 itemView.getBottom()
         );
 
         colorDrawable.draw(c);
 
-        int deleteIconTop = itemView.getTop() + (itemViewHeight - deleteDrawable.getIntrinsicHeight()) / 2;
-        int deleteIconMargin = (itemViewHeight - deleteDrawable.getIntrinsicHeight()) / 2;
-        int deleteIconLeft = itemView.getRight() - deleteIconMargin - deleteDrawable.getIntrinsicWidth();
-        int deleteIconRight = itemView.getRight() - deleteIconMargin;
-        int deleteIconBottom = deleteIconTop + deleteDrawable.getIntrinsicHeight();
-
-        deleteDrawable.setBounds(deleteIconLeft,
+        someDrawable.setBounds(deleteIconLeft,
                 deleteIconTop,
                 deleteIconRight,
                 deleteIconBottom
         );
 
-        deleteDrawable.draw(c);
+        someDrawable.draw(c);
+
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 }
