@@ -12,16 +12,16 @@ import com.n00blife.lockit.util.ImageUtils;
 public class PackageBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(intent.getAction() == null) return;
+        if (intent.getAction() == null) return;
 
         ApplicationDatabase database = ApplicationDatabase.getInstance(context);
 
-        switch(intent.getAction()) {
+        switch (intent.getAction()) {
             case Intent.ACTION_PACKAGE_ADDED:
                 int packageUid = intent.getIntExtra(Intent.EXTRA_UID, -1);
-                if(packageUid == -1) break;
+                if (packageUid == -1) break;
                 String[] packages = context.getPackageManager().getPackagesForUid(packageUid);
-                if(packages == null) break;
+                if (packages == null) break;
                 String installedPackage = packages[0];
                 try {
                     ApplicationInfo installedAppInfo = context.getPackageManager().getApplicationInfo(installedPackage, 0);

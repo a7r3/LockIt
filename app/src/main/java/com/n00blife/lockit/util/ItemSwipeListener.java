@@ -22,6 +22,7 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
     private ColorDrawable colorDrawable = new ColorDrawable();
     private Context context;
     private Drawable deleteDrawable;
+    private Paint clearPaint = new Paint();
 
     public ItemSwipeListener(Context context) {
         super(0, LEFT);
@@ -39,18 +40,16 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
 
     }
 
-    private Paint clearPaint = new Paint();
-
     @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         View itemView = viewHolder.itemView;
         int itemViewHeight = itemView.getBottom() - itemView.getTop();
         boolean isCanceled = dX == 0f && isCurrentlyActive;
 
-        if(isCanceled) {
+        if (isCanceled) {
             clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
             c.drawRect(itemView.getRight() - dX, (float) itemView.getTop(), (float) itemView.getRight(), (float) itemView.getBottom(), clearPaint);
-            super.onChildDraw(c, recyclerView,viewHolder, dX, dY, actionState, isCurrentlyActive);
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
             return;
         }
 
@@ -60,7 +59,7 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
                 itemView.getTop(),
                 itemView.getRight(),
                 itemView.getBottom()
-                );
+        );
 
         colorDrawable.draw(c);
 
@@ -77,6 +76,6 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
         );
 
         deleteDrawable.draw(c);
-        super.onChildDraw(c, recyclerView,viewHolder, dX, dY, actionState, isCurrentlyActive);
+        super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 }

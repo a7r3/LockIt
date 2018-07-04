@@ -31,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         try {
             unregisterReceiver(packageBroadcastReceiver);
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -66,12 +68,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 
-                if(previousSelectedItemResId == item.getItemId())
+                if (previousSelectedItemResId == item.getItemId())
                     return false;
 
                 Fragment fragment;
 
-                switch(item.getItemId()) {
+                switch (item.getItemId()) {
                     case R.id.profiles_item:
                         previousSelectedItemResId = R.id.profiles_item;
                         fragment = profileFragment;

@@ -12,11 +12,11 @@ import com.n00blife.lockit.R;
 
 public class IntroFragment extends Fragment {
 
+    private static String POSITION = "position";
+
     public IntroFragment() {
 
     }
-
-    private static String POSITION = "position";
 
     public static IntroFragment getInstance(int position) {
         IntroFragment fragment = new IntroFragment();
@@ -31,7 +31,7 @@ public class IntroFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         int layoutResId = R.layout.intro_final_slide;
 
-        switch(getArguments().getInt(POSITION)) {
+        switch (getArguments().getInt(POSITION)) {
             case 0:
                 layoutResId = R.layout.intro_slide1;
                 break;

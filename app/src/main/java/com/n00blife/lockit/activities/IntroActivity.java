@@ -57,7 +57,7 @@ public class IntroActivity extends AppCompatActivity {
             }
         });
 
-        if(ApplicationDatabase.getInstance(this).getRowCount() == 0)
+        if (ApplicationDatabase.getInstance(this).getRowCount() == 0)
             retrieveApplicationList();
         else {
             TransitionManager.beginDelayedTransition(parent);
@@ -69,12 +69,13 @@ public class IntroActivity extends AppCompatActivity {
         TabLayout tabLayout = findViewById(R.id.intro_tablayout);
         tabLayout.setupWithViewPager(viewPager);
     }
+
     public void retrieveApplicationList() {
 
         Intent mainIntent = new Intent(Intent.ACTION_MAIN);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        final ApplicationDatabase applicationDatabase =  ApplicationDatabase.getInstance(this);
+        final ApplicationDatabase applicationDatabase = ApplicationDatabase.getInstance(this);
 
         Observable.fromIterable(getPackageManager().queryIntentActivities(mainIntent, 0))
                 .sorted(new ResolveInfo.DisplayNameComparator(getPackageManager()))

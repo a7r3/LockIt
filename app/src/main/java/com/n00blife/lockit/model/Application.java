@@ -1,7 +1,5 @@
 package com.n00blife.lockit.model;
 
-import android.graphics.Bitmap;
-
 public class Application {
 
     private String applicationName;
@@ -16,16 +14,16 @@ public class Application {
         this.applicationIconEncoded = applicationIconEncoded;
     }
 
+    public Application() {
+
+    }
+
     public String getApplicationIconEncoded() {
         return applicationIconEncoded;
     }
 
     public void setApplicationIconEncoded(String applicationIconEncoded) {
         this.applicationIconEncoded = applicationIconEncoded;
-    }
-
-    public Application() {
-
     }
 
     public boolean isAfter(Application toBeInserted) {

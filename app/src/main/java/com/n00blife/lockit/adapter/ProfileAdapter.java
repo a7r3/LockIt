@@ -7,11 +7,9 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.n00blife.lockit.R;
-import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Profile;
 import com.n00blife.lockit.util.ImageUtils;
@@ -20,8 +18,8 @@ import java.util.ArrayList;
 
 public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder> {
 
-    private Context context;
     public ArrayList<Profile> profileArrayList;
+    private Context context;
     private OnItemClickedListener onItemClickedListener;
 
     public ProfileAdapter(Context context, ArrayList<Profile> profileArrayList) {
@@ -78,7 +76,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(onItemClickedListener != null)
+                    if (onItemClickedListener != null)
                         onItemClickedListener.onItemClick(getAdapterPosition(), profileArrayList.get(getAdapterPosition()));
                 }
             });

@@ -19,13 +19,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
-import android.widget.Toast;
 
 import com.n00blife.lockit.R;
-import com.n00blife.lockit.activities.MainActivity;
 import com.n00blife.lockit.activities.ProfileCreationActivity;
 import com.n00blife.lockit.adapter.ProfileAdapter;
-import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Profile;
 import com.n00blife.lockit.services.LockService;
@@ -130,14 +127,14 @@ public class ProfileFragment extends Fragment {
 
                         @Override
                         public void onComplete() {
-                            if(profiles.size() == 0) {
+                            if (profiles.size() == 0) {
                                 noProfileContainer.setVisibility(View.VISIBLE);
                                 profileListView.setVisibility(View.GONE);
                             }
                             adapter.notifyDataSetChanged();
                         }
                     });
-            }
+        }
 
         ItemSwipeListener listener = new ItemSwipeListener(getContext()) {
             @Override

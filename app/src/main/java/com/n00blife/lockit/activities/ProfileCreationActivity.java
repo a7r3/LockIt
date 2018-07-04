@@ -2,8 +2,6 @@ package com.n00blife.lockit.activities;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.media.Image;
 import android.os.Bundle;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputLayout;
@@ -25,14 +23,12 @@ import com.n00blife.lockit.adapter.ApplicationAdapter;
 import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Application;
-import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
 import java.util.ArrayList;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
-import io.reactivex.android.plugins.RxAndroidPlugins;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -113,7 +109,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String profileName = profileNameInput.getText().toString();
 
-                if(profileName.equals("")) {
+                if (profileName.equals("")) {
                     profileNameInput.setError("Profile Name cannot be empty");
                     return;
                 }
@@ -128,7 +124,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
                 int status = WhiteListedApplicationDatabase.getInstance(ProfileCreationActivity.this).createProfile(profileName, pkgList);
 
-                if(status == -1) {
+                if (status == -1) {
                     profileNameInput.setError("This profile already exists");
                 } else {
                     Toast.makeText(ProfileCreationActivity.this,

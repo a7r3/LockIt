@@ -19,9 +19,9 @@ public class IntroPagerTransformer implements ViewPager.PageTransformer {
 
         float absPosition = Math.abs(position);
 
-        if(position <= -1.0f || position >= 1.0f) {
+        if (position <= -1.0f || position >= 1.0f) {
             // Page is totally out of scope
-        } else if(position == 0.0f) {
+        } else if (position == 0.0f) {
             // Page is completely visible
             // Actions that require the page to be selected can be done here
         } else {

@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimaryDark"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:background="@color/colorPrimaryDark">
 
     <TextView
         android:id="@+id/intro_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:text="Impose Time Limits"
+        android:textColor="#fff"
         android:textSize="24sp"
         android:textStyle="bold"
-        android:textColor="#fff"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/intro_image"
-        app:layout_constraintTop_toTopOf="parent"
-        android:text="Impose Time Limits"
-        android:gravity="center_horizontal"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/intro_image"
-        android:layout_height="104dp"
         android:layout_width="104dp"
+        android:layout_height="104dp"
         android:src="@drawable/ic_timelapse"
         android:tint="#fff"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
+        android:id="@+id/intro_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/intro_description"
-        android:textSize="18sp"
-        android:textColor="#fff"
-        app:layout_constraintTop_toBottomOf="@id/intro_image"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:gravity="center_horizontal"
-        app:layout_constraintBottom_toBottomOf="parent"
-        android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:text="The child would be able to use the specified Apps under the time limit" />
+        android:paddingStart="8dp"
+        android:text="The child would be able to use the specified Apps under the time limit"
+        android:textColor="#fff"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/intro_image" />
 
 </android.support.constraint.ConstraintLayout>

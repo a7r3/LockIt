@@ -74,7 +74,7 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
             applicationName = itemView.findViewById(R.id.application_name);
             applicationPackageName = itemView.findViewById(R.id.application_package_name);
             applicationVersion = itemView.findViewById(R.id.application_version);
-            if(layoutResId != R.layout.app_item_grid_mini) {
+            if (layoutResId != R.layout.app_item_grid_mini) {
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
