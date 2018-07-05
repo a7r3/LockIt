@@ -31,9 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         try {
             unregisterReceiver(packageBroadcastReceiver);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     @Override

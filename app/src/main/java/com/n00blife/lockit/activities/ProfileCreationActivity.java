@@ -2,7 +2,9 @@ package com.n00blife.lockit.activities;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.transition.TransitionManager;
@@ -21,14 +23,20 @@ import android.widget.Toast;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
 import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
-import java.util.ArrayList;
+import org.reactivestreams.Subscription;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import io.reactivex.FlowableSubscriber;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -51,6 +59,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
     private TextView cancelButton;
     private PackageManager pm;
     private ProgressBar progressBar;
+    private  RoomApplicationDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,19 +77,6 @@ public class ProfileCreationActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         applicationListRecycler = findViewById(R.id.apps_list);
         applicationListRecycler.addItemDecoration(new MarginDividerItemDecoration(this));
-        applicationAdapter = new ApplicationAdapter(this, applicationArrayList, R.layout.app_item);
-        applicationAdapter.setOnItemClicked(new ApplicationAdapter.onItemClicked() {
-            @Override
-            public void onHolderClick(int position, Application application) {
-                applicationArrayList.remove(application);
-                applicationAdapter.notifyItemRemoved(position);
-                TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
-                whiteListCard.setVisibility(View.VISIBLE);
-                profileName.setVisibility(View.VISIBLE);
-                whitelistedApplicationList.add(application);
-                whitelistedApplicationAdapter.notifyItemInserted(whitelistedApplicationList.size() - 1);
-            }
-        });
 
         applicationListRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         applicationListRecycler.setAdapter(applicationAdapter);
@@ -151,38 +147,39 @@ public class ProfileCreationActivity extends AppCompatActivity {
         applicationDatabase = ApplicationDatabase.getInstance(this);
 
         retrieveApplicationListFromDatabase();
-
     }
 
     public void retrieveApplicationListFromDatabase() {
-        Observable.fromIterable(ApplicationDatabase.getInstance(this).getAllApplications())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Application>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        applicationListRecycler.setVisibility(View.GONE);
-                        progressBar.setVisibility(View.VISIBLE);
-                    }
+//        Observable.fromIterable(ApplicationDatabase.getInstance(this).getAllApplications())
+//                .subscribeOn(Schedulers.io())
+//                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(new Observer<Application>() {
+//                    @Override
+//                    public void onSubscribe(Disposable d) {
+//                        progressBar.setVisibility(View.VISIBLE);
+//                    }
+//
+//                    @Override
+//                    public void onNext(Application application) {
+//                        applicationArrayList.add(application);
+//                        applicationAdapter.notifyItemInserted(applicationArrayList.size());
+//                    }
+//
+//                    @Override
+//                    public void onError(Throwable e) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onComplete() {
+//                        progressBar.setVisibility(View.GONE);
+//                        Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
+//                    }
+//                });
+//
 
-                    @Override
-                    public void onNext(Application application) {
-                        applicationArrayList.add(application);
-                        applicationAdapter.notifyItemInserted(applicationArrayList.size());
-                    }
 
-                    @Override
-                    public void onError(Throwable e) {
+        applicationListRecycler.setVisibility(View.GONE);
 
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        progressBar.setVisibility(View.GONE);
-                        applicationListRecycler.setVisibility(View.VISIBLE);
-                        Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
-                    }
-                });
     }
-
 }
