@@ -23,3 +23,7 @@ Application which sets a timer, within which the child is allowed to use a restr
    - Whitelisted apps would open
 2. Above two restrictions are applied for a given time limit by the parent
 3. On crossing the time limit, the Phone is Locked (Sent to Lockscreen)
+
+# LICENSE
+
+Project uses the MIT License, you can obtain it at [LICENSE](https://raw.githubusercontent.com/a7r3/LockIt/master/LICENSE)
