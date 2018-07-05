@@ -21,7 +21,7 @@ import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
-import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.receiver.PackageBroadcastReceiver;
 import com.n00blife.lockit.util.Constants;
@@ -43,7 +43,7 @@ public class LockService extends Service {
 
     private final String TAG = getClass().getSimpleName();
     private final IBinder binder = new LocalBinder();
-    private ArrayList<String> allApplicationPackages;
+    private ArrayList<String> allApplicationPackages = new ArrayList<>();
     private ArrayList<String> whitelistedApplicationPackages;
     private Observable<Long> timerObservable;
     private Observer<Long> timerObserver;
@@ -58,7 +58,7 @@ public class LockService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        allApplicationPackages = ApplicationDatabase.getInstance(this).getAllPackages();
+        allApplicationPackages.addAll(RoomApplicationDatabase.getInstance(this).applicationDao().getPackages());
 
         whitelistedApplicationPackages = WhiteListedApplicationDatabase.getInstance(this).getPackageListForProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME));
 
@@ -85,6 +85,7 @@ public class LockService extends Service {
     }
 
     public void initTimerObserver() {
+
         timerObserver = new Observer<Long>() {
             @Override
             public void onSubscribe(Disposable d) {
@@ -154,6 +155,7 @@ public class LockService extends Service {
                         Log.d(TAG, "LockService Complete");
                     }
                 });
+
                 LockService.this.onDestroy();
             }
         };

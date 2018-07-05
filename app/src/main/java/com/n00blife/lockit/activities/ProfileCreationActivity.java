@@ -1,11 +1,8 @@
 package com.n00blife.lockit.activities;
 
-import android.arch.persistence.room.RoomDatabase;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TextInputLayout;
 import android.support.transition.TransitionManager;
@@ -23,22 +20,15 @@ import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
-import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
-import org.reactivestreams.Subscription;
-
 import java.util.ArrayList;
 import java.util.List;
 
-import io.reactivex.FlowableSubscriber;
 import io.reactivex.MaybeObserver;
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -56,7 +46,6 @@ public class ProfileCreationActivity extends AppCompatActivity {
     private EditText profileNameInput;
     private TextInputLayout profileName;
     private ConstraintLayout whiteListCard;
-    private ApplicationDatabase applicationDatabase;
     private Button addButton;
     private TextView cancelButton;
     private PackageManager pm;
@@ -82,6 +71,14 @@ public class ProfileCreationActivity extends AppCompatActivity {
         applicationAdapter = new ApplicationAdapter(this, applicationArrayList, R.layout.app_item);
         applicationListRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         applicationListRecycler.setAdapter(applicationAdapter);
+
+        applicationAdapter.setOnItemClicked(new ApplicationAdapter.onItemClicked() {
+            @Override
+            public void onHolderClick(int position, Application application) {
+                whitelistedApplicationList.add(application);
+                whitelistedApplicationAdapter.notifyItemInserted(whitelistedApplicationList.size() - 1);
+            }
+        });
 
         whitelistedApplicationAdapter = new ApplicationAdapter(this, whitelistedApplicationList, R.layout.app_item_grid);
         whitelistedApplicationAdapter.setOnItemClicked(new ApplicationAdapter.onItemClicked() {

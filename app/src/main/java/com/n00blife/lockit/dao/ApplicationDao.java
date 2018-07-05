@@ -24,7 +24,7 @@ public interface ApplicationDao {
     Single<Integer> getNumberOfRows();
 
     @Query("SELECT app_package FROM apps")
-    Maybe<List<String>> getPackages();
+    List<String> getPackages();
 
     @Delete
     void removeApplication(Application a);

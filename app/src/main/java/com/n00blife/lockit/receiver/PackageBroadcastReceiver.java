@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 
-import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.ImageUtils;
 
@@ -13,8 +13,6 @@ public class PackageBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction() == null) return;
-
-        ApplicationDatabase database = ApplicationDatabase.getInstance(context);
 
         switch (intent.getAction()) {
             case Intent.ACTION_PACKAGE_ADDED:
@@ -28,7 +26,9 @@ public class PackageBroadcastReceiver extends BroadcastReceiver {
                     String appLabel = installedAppInfo.loadLabel(context.getPackageManager()).toString();
                     String appIcon64 = ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(installedAppInfo.loadIcon(context.getPackageManager())));
                     String appVersion = context.getPackageManager().getPackageInfo(installedPackage, 0).versionName;
-                    database.addApplication(new Application(
+                    RoomApplicationDatabase.getInstance(context)
+                            .applicationDao()
+                            .addApplication(new Application(
                             appLabel,
                             installedPackage,
                             appVersion,

@@ -15,19 +15,12 @@ import android.widget.ProgressBar;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.IntroAdapter;
-import com.n00blife.lockit.database.ApplicationDatabase;
 import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.IntroPagerTransformer;
 
-import java.util.List;
-
-import io.reactivex.Maybe;
-import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
