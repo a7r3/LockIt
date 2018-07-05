@@ -16,12 +16,20 @@ import android.widget.ProgressBar;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.IntroAdapter;
 import com.n00blife.lockit.database.ApplicationDatabase;
+import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.IntroPagerTransformer;
 
+import java.util.List;
+
+import io.reactivex.Maybe;
+import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
+import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -57,15 +65,32 @@ public class IntroActivity extends AppCompatActivity {
             }
         });
 
-        if (ApplicationDatabase.getInstance(this).getRowCount() == 0)
-            retrieveApplicationList();
-        else {
-            TransitionManager.beginDelayedTransition(parent);
-            progressBar.setVisibility(View.GONE);
-            getStartedButton.setVisibility(View.VISIBLE);
-        }
+        RoomApplicationDatabase.getInstance(this).applicationDao().getNumberOfRows()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new SingleObserver<Integer>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
 
-        viewPager.setOffscreenPageLimit(4);
+                    }
+
+                    @Override
+                    public void onSuccess(Integer integer) {
+                        if (integer == 0)
+                            retrieveApplicationList();
+                        else {
+                            TransitionManager.beginDelayedTransition(parent);
+                            progressBar.setVisibility(View.GONE);
+                            getStartedButton.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+                });
+
         TabLayout tabLayout = findViewById(R.id.intro_tablayout);
         tabLayout.setupWithViewPager(viewPager);
     }
@@ -75,7 +100,7 @@ public class IntroActivity extends AppCompatActivity {
         Intent mainIntent = new Intent(Intent.ACTION_MAIN);
         mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        final ApplicationDatabase applicationDatabase = ApplicationDatabase.getInstance(this);
+        final RoomApplicationDatabase db = RoomApplicationDatabase.getInstance(this);
 
         Observable.fromIterable(getPackageManager().queryIntentActivities(mainIntent, 0))
                 .sorted(new ResolveInfo.DisplayNameComparator(getPackageManager()))
@@ -90,18 +115,26 @@ public class IntroActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onNext(ResolveInfo resolveInfo) {
-                        try {
-                            Application a = new Application(
-                                    resolveInfo.loadLabel(getPackageManager()).toString(),
-                                    resolveInfo.activityInfo.packageName,
-                                    getPackageManager().getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
-                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(getPackageManager())))
-                            );
-                            applicationDatabase.addApplication(a);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                    public void onNext(final ResolveInfo resolveInfo) {
+
+                        Observable.create(new ObservableOnSubscribe<String>() {
+                            @Override
+                            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
+                                try {
+                                    Application a = new Application(
+                                            resolveInfo.loadLabel(getPackageManager()).toString(),
+                                            resolveInfo.activityInfo.packageName,
+                                            getPackageManager().getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
+                                            ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(getPackageManager())))
+                                    );
+                                    db.applicationDao().addApplication(a);
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                        })
+                                .subscribeOn(Schedulers.io())
+                                .subscribe();
                     }
 
                     @Override

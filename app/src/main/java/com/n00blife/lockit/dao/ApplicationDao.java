@@ -11,19 +11,20 @@ import com.n00blife.lockit.model.Application;
 import java.util.List;
 
 import io.reactivex.Flowable;
+import io.reactivex.Maybe;
 import io.reactivex.Single;
 
 @Dao
 public interface ApplicationDao {
 
     @Query("SELECT * FROM apps")
-    Flowable<List<Application>> getApplications();
+    Maybe<List<Application>> getApplications();
 
     @Query("SELECT COUNT(*) FROM apps")
     Single<Integer> getNumberOfRows();
 
     @Query("SELECT app_package FROM apps")
-    Flowable<String> getPackages();
+    Maybe<List<String>> getPackages();
 
     @Delete
     void removeApplication(Application a);

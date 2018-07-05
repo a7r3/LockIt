@@ -1,5 +1,6 @@
 package com.n00blife.lockit.activities;
 
+import android.arch.persistence.room.RoomDatabase;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -34,6 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.FlowableSubscriber;
+import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.SingleObserver;
@@ -77,11 +79,9 @@ public class ProfileCreationActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         applicationListRecycler = findViewById(R.id.apps_list);
         applicationListRecycler.addItemDecoration(new MarginDividerItemDecoration(this));
-
+        applicationAdapter = new ApplicationAdapter(this, applicationArrayList, R.layout.app_item);
         applicationListRecycler.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         applicationListRecycler.setAdapter(applicationAdapter);
-
-        final ProgressBar progressBar = findViewById(R.id.progressbar);
 
         whitelistedApplicationAdapter = new ApplicationAdapter(this, whitelistedApplicationList, R.layout.app_item_grid);
         whitelistedApplicationAdapter.setOnItemClicked(new ApplicationAdapter.onItemClicked() {
@@ -133,10 +133,12 @@ public class ProfileCreationActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if(whitelistedApplicationList.size() == 0) return;
+
                 whitelistedApplicationList.clear();
                 // FIXME This is bad ;-;
                 applicationArrayList.clear();
-                applicationArrayList.addAll(applicationDatabase.getAllApplications());
+                retrieveApplicationListFromDatabase();
                 applicationAdapter.notifyDataSetChanged();
                 TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
                 whiteListCard.setVisibility(View.GONE);
@@ -144,42 +146,44 @@ public class ProfileCreationActivity extends AppCompatActivity {
             }
         });
 
-        applicationDatabase = ApplicationDatabase.getInstance(this);
-
         retrieveApplicationListFromDatabase();
     }
 
     public void retrieveApplicationListFromDatabase() {
-//        Observable.fromIterable(ApplicationDatabase.getInstance(this).getAllApplications())
-//                .subscribeOn(Schedulers.io())
-//                .observeOn(AndroidSchedulers.mainThread())
-//                .subscribe(new Observer<Application>() {
-//                    @Override
-//                    public void onSubscribe(Disposable d) {
-//                        progressBar.setVisibility(View.VISIBLE);
-//                    }
-//
-//                    @Override
-//                    public void onNext(Application application) {
-//                        applicationArrayList.add(application);
-//                        applicationAdapter.notifyItemInserted(applicationArrayList.size());
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onComplete() {
-//                        progressBar.setVisibility(View.GONE);
-//                        Toast.makeText(ProfileCreationActivity.this, "Complete", Toast.LENGTH_LONG).show();
-//                    }
-//                });
-//
 
+        RoomApplicationDatabase db = RoomApplicationDatabase.getInstance(this);
 
-        applicationListRecycler.setVisibility(View.GONE);
+        db.applicationDao().getApplications()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<List<Application>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        TransitionManager.beginDelayedTransition((ViewGroup) ProfileCreationActivity.this.findViewById(android.R.id.content));
+                        applicationListRecycler.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.VISIBLE);
+                    }
+
+                    @Override
+                    public void onSuccess(List<Application> applications) {
+                        applicationArrayList.addAll(applications);
+                        applicationAdapter.notifyDataSetChanged();
+                        TransitionManager.beginDelayedTransition((ViewGroup) ProfileCreationActivity.this.findViewById(android.R.id.content));
+                        applicationListRecycler.setVisibility(View.VISIBLE);
+                        progressBar.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
 
     }
 }
