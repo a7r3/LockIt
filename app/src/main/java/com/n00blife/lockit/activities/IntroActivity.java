@@ -32,6 +32,7 @@ import io.reactivex.Observer;
 import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class IntroActivity extends AppCompatActivity {
@@ -105,6 +106,25 @@ public class IntroActivity extends AppCompatActivity {
         Observable.fromIterable(getPackageManager().queryIntentActivities(mainIntent, 0))
                 .sorted(new ResolveInfo.DisplayNameComparator(getPackageManager()))
                 .subscribeOn(Schedulers.io())
+                // RxJava FTW <3 <3
+                .observeOn(Schedulers.io())
+                .doOnNext(new Consumer<ResolveInfo>() {
+                    @Override
+                    public void accept(final ResolveInfo resolveInfo) throws Exception {
+                        try {
+                            Application a = new Application(
+                                    resolveInfo.loadLabel(getPackageManager()).toString(),
+                                    resolveInfo.activityInfo.packageName,
+                                    getPackageManager().getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
+                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(getPackageManager())))
+                            );
+                            db.applicationDao().addApplication(a);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                })
+                // RxAndroid FTW
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<ResolveInfo>() {
                     @Override
@@ -117,24 +137,6 @@ public class IntroActivity extends AppCompatActivity {
                     @Override
                     public void onNext(final ResolveInfo resolveInfo) {
 
-                        Observable.create(new ObservableOnSubscribe<String>() {
-                            @Override
-                            public void subscribe(ObservableEmitter<String> emitter) throws Exception {
-                                try {
-                                    Application a = new Application(
-                                            resolveInfo.loadLabel(getPackageManager()).toString(),
-                                            resolveInfo.activityInfo.packageName,
-                                            getPackageManager().getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
-                                            ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(getPackageManager())))
-                                    );
-                                    db.applicationDao().addApplication(a);
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        })
-                                .subscribeOn(Schedulers.io())
-                                .subscribe();
                     }
 
                     @Override
