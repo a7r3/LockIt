@@ -24,7 +24,7 @@ public interface ApplicationDao {
 
     // TODO Make this Reactive too
     @Query("SELECT app_package FROM apps")
-    List<String> getPackages();
+    Maybe<List<String>> getPackages();
 
     @Delete
     void removeApplication(Application a);

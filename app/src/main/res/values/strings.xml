@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">LockIt</string>
+    <string name="usage_status_prompt_messsage">LockIt requires the \"Usage Stats\" permission to keep track of the applications your child would open. This is required for LockIt to work.\n\nPressing \"Open Settings\" would redirect you to the Usage Stats page, where you can grant this permission to LockIt.</string>
 </resources>

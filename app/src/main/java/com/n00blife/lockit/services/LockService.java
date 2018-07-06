@@ -27,10 +27,12 @@ import com.n00blife.lockit.receiver.PackageBroadcastReceiver;
 import com.n00blife.lockit.util.Constants;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
+import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -58,7 +60,32 @@ public class LockService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        allApplicationPackages.addAll(RoomApplicationDatabase.getInstance(this).applicationDao().getPackages());
+        RoomApplicationDatabase.getInstance(this)
+                .applicationDao()
+                .getPackages()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new MaybeObserver<List<String>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onSuccess(List<String> strings) {
+                        allApplicationPackages.addAll(strings);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
 
         whitelistedApplicationPackages = WhiteListedApplicationDatabase.getInstance(this).getPackageListForProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME));
 
@@ -199,7 +226,10 @@ public class LockService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(packageBroadcastReceiver);
+        try {
+            // TODO Better way to check whether Broadcast is registered
+            unregisterReceiver(packageBroadcastReceiver);
+        } catch (Exception e) { e.printStackTrace(); }
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
         stopSelf();

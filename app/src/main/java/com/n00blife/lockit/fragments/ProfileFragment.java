@@ -82,6 +82,7 @@ public class ProfileFragment extends Fragment {
                                 lockServiceIntent.putExtra(Constants.EXTRA_TIMER, numberPicker.getValue());
                                 lockServiceIntent.putExtra(Constants.EXTRA_PROFILE_NAME, profile.getProfileName());
                                 ContextCompat.startForegroundService(getActivity(), lockServiceIntent);
+                                getActivity().finish();
                             }
                         })
                         .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

@@ -77,6 +77,11 @@ public class ProfileCreationActivity extends AppCompatActivity {
             public void onHolderClick(int position, Application application) {
                 whitelistedApplicationList.add(application);
                 whitelistedApplicationAdapter.notifyItemInserted(whitelistedApplicationList.size() - 1);
+                applicationArrayList.remove(position);
+                applicationAdapter.notifyItemRemoved(position);
+                TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
+                whiteListCard.setVisibility(View.VISIBLE);
+                profileName.setVisibility(View.VISIBLE);
             }
         });
 
@@ -134,9 +139,11 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
                 whitelistedApplicationList.clear();
                 // FIXME This is bad ;-;
-                applicationArrayList.clear();
+                applicationArrayList = new ArrayList<>();
                 retrieveApplicationListFromDatabase();
                 applicationAdapter.notifyDataSetChanged();
+                applicationListRecycler.setAdapter(null);
+                applicationListRecycler.setAdapter(applicationAdapter);
                 TransitionManager.beginDelayedTransition((ViewGroup) findViewById(android.R.id.content));
                 whiteListCard.setVisibility(View.GONE);
                 profileName.setVisibility(View.GONE);
