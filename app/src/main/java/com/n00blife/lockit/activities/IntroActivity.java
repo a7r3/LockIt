@@ -1,13 +1,16 @@
 package com.n00blife.lockit.activities;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.transition.TransitionManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -19,6 +22,8 @@ import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.IntroPagerTransformer;
+
+import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -34,17 +39,55 @@ public class IntroActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Button getStartedButton;
     private ViewGroup parent;
+    private String IS_INTRO_COMPLETE = "intro_complete";
+    private int i = 0;
+    private final String TAG = getClass().getSimpleName();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_intro);
 
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(IntroActivity.this);
+
+        if(preferences.getBoolean(IS_INTRO_COMPLETE, false)) {
+            startActivity(new Intent(IntroActivity.this, MainActivity.class));
+            finish();
+        }
+
         viewPager = findViewById(R.id.intro_viewpager);
 
         viewPager.setAdapter(new IntroAdapter(getSupportFragmentManager()));
 
         viewPager.setPageTransformer(false, new IntroPagerTransformer());
+
+        Observable.interval(0, 3, TimeUnit.SECONDS)
+                .take(4)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Long>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        Log.d(TAG, "AutoViewPagerScroll: Started");
+                    }
+
+                    @Override
+                    public void onNext(Long aLong) {
+                        Log.d(TAG, "AutoViewPagerScroll: Page " + i);
+                        viewPager.setCurrentItem(i++, true);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        Log.d(TAG, "AutoViewPagerScroll: Complete");
+                    }
+                });
+
+        viewPager.setCurrentItem(0, true);
 
         progressBar = findViewById(R.id.loader_progress);
 
@@ -56,6 +99,11 @@ public class IntroActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(IntroActivity.this, MainActivity.class));
+                finish();
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(IntroActivity.this);
+                preferences.edit()
+                        .putBoolean(IS_INTRO_COMPLETE, true)
+                        .apply();
             }
         });
 

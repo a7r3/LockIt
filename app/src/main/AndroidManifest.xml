@@ -25,6 +25,7 @@
             android:theme="@style/LockTheme"/>
 
         <activity android:name=".activities.ProfileCreationActivity" />
+        <activity android:name=".activities.PostLockdownActivity" />
 
         <service android:name=".services.LockService"
             android:process=":lockService" />

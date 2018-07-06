@@ -10,7 +10,6 @@ import com.n00blife.lockit.model.Application;
 
 import java.util.List;
 
-import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 
@@ -23,6 +22,7 @@ public interface ApplicationDao {
     @Query("SELECT COUNT(*) FROM apps")
     Single<Integer> getNumberOfRows();
 
+    // TODO Make this Reactive too
     @Query("SELECT app_package FROM apps")
     List<String> getPackages();
 
