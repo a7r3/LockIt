@@ -21,9 +21,9 @@ import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
+import com.n00blife.lockit.activities.PostLockdownActivity;
 import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
-import com.n00blife.lockit.receiver.PackageBroadcastReceiver;
 import com.n00blife.lockit.util.Constants;
 
 import java.util.ArrayList;
@@ -49,7 +49,6 @@ public class LockService extends Service {
     private ArrayList<String> whitelistedApplicationPackages;
     private Observable<Long> timerObservable;
     private Observer<Long> timerObserver;
-    private PackageBroadcastReceiver packageBroadcastReceiver;
 
     @Nullable
     @Override
@@ -87,7 +86,9 @@ public class LockService extends Service {
                     }
                 });
 
-        whitelistedApplicationPackages = WhiteListedApplicationDatabase.getInstance(this).getPackageListForProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME));
+        whitelistedApplicationPackages = WhiteListedApplicationDatabase
+                .getInstance(this)
+                .getPackageListForProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME));
 
         timerObservable = Observable
                 .intervalRange(0, intent.getIntExtra(Constants.EXTRA_TIMER, 1) * 60, 0, 1L, TimeUnit.SECONDS)
@@ -99,14 +100,6 @@ public class LockService extends Service {
 
         Log.d(TAG, "Apps: " + allApplicationPackages.size());
         Log.d(TAG, "WhiteApps: " + whitelistedApplicationPackages.size());
-
-        packageBroadcastReceiver = new PackageBroadcastReceiver();
-        IntentFilter packageFilter = new IntentFilter();
-        packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        packageFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-
-        registerReceiver(packageBroadcastReceiver, packageFilter);
 
         return super.onStartCommand(intent, flags, startId);
     }
@@ -178,7 +171,7 @@ public class LockService extends Service {
                 new Handler(getMainLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        Toast.makeText(getApplicationContext(), "Show up the Lockscreen damnit! :P", Toast.LENGTH_LONG).show();
+                        startActivity(new Intent(LockService.this, PostLockdownActivity.class));
                         Log.d(TAG, "LockService Complete");
                     }
                 });
@@ -226,10 +219,6 @@ public class LockService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        try {
-            // TODO Better way to check whether Broadcast is registered
-            unregisterReceiver(packageBroadcastReceiver);
-        } catch (Exception e) { e.printStackTrace(); }
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
         stopSelf();

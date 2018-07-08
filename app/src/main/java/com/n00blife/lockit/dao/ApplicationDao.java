@@ -1,6 +1,5 @@
 package com.n00blife.lockit.dao;
 
-import android.arch.lifecycle.LiveData;
 import android.arch.persistence.room.Dao;
 import android.arch.persistence.room.Delete;
 import android.arch.persistence.room.Insert;
@@ -22,9 +21,11 @@ public interface ApplicationDao {
     @Query("SELECT COUNT(*) FROM apps")
     Single<Integer> getNumberOfRows();
 
-    // TODO Make this Reactive too
     @Query("SELECT app_package FROM apps")
     Maybe<List<String>> getPackages();
+
+    @Query("SELECT * from apps WHERE app_package = :pkg")
+    Maybe<Application> getApplicationByPackage(String pkg);
 
     @Delete
     void removeApplication(Application a);

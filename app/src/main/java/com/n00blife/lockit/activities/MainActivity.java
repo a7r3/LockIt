@@ -30,25 +30,14 @@ import com.n00blife.lockit.R;
 import com.n00blife.lockit.fragments.AboutFragment;
 import com.n00blife.lockit.fragments.AppPreferenceFragment;
 import com.n00blife.lockit.fragments.ProfileFragment;
-import com.n00blife.lockit.receiver.PackageBroadcastReceiver;
 
 public class MainActivity extends AppCompatActivity {
 
-    private PackageBroadcastReceiver packageBroadcastReceiver;
     private BottomNavigationView bottomNavigationView;
     private ProfileFragment profileFragment = new ProfileFragment();
     private AboutFragment aboutFragment = new AboutFragment();
     private AppPreferenceFragment appPreferenceFragment = new AppPreferenceFragment();
     private int previousSelectedItemResId;
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        try {
-            // TODO Better way to check whether Broadcast is registered
-            unregisterReceiver(packageBroadcastReceiver);
-        } catch (Exception e) { e.printStackTrace(); }
-    }
 
     private int RESULT = 23;
 
@@ -116,14 +105,6 @@ public class MainActivity extends AppCompatActivity {
 
         if(!isUsageStatsPermissionGranted())
             usageStatDialog.show();
-
-        packageBroadcastReceiver = new PackageBroadcastReceiver();
-        IntentFilter packageFilter = new IntentFilter();
-        packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
-        packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
-        packageFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
-
-        registerReceiver(packageBroadcastReceiver, packageFilter);
 
         bottomNavigationView = findViewById(R.id.main_navbar);
 

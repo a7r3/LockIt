@@ -17,7 +17,11 @@ Application which sets a timer, within which the child is allowed to use a restr
   - Can be done using a Foreground Service (Background in API < 26) which constantly awaits for the gesture
   - May Consume battery, would add only if the battery consumption is minimal
 
-# Working
+## Issues / TODO
+
+* To find a way of updating the package list whenever a package is replaced/installed/uninstalled
+
+## Working
 
 1. On triggering a profile, all apps other than the whitelisted apps won't be allowed to open
    - Whitelisted apps would open
