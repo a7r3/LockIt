@@ -8,7 +8,7 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build;
@@ -17,26 +17,23 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.activities.PostLockdownActivity;
-import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.util.Constants;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
@@ -59,32 +56,16 @@ public class LockService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        RoomApplicationDatabase.getInstance(this)
-                .applicationDao()
-                .getPackages()
+        Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new MaybeObserver<List<String>>() {
+                .observeOn(Schedulers.io())
+                .doOnNext(new Consumer<ApplicationInfo>() {
                     @Override
-                    public void onSubscribe(Disposable d) {
-
+                    public void accept(ApplicationInfo applicationInfo) {
+                        allApplicationPackages.add(applicationInfo.packageName);
                     }
-
-                    @Override
-                    public void onSuccess(List<String> strings) {
-                        allApplicationPackages.addAll(strings);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
+                })
+                .subscribe();
 
         whitelistedApplicationPackages = WhiteListedApplicationDatabase
                 .getInstance(this)

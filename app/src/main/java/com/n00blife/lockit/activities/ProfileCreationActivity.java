@@ -1,6 +1,7 @@
 package com.n00blife.lockit.activities;
 
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -20,17 +21,18 @@ import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
-import com.n00blife.lockit.database.RoomApplicationDatabase;
 import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
 import com.n00blife.lockit.model.Application;
+import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
 import java.util.ArrayList;
-import java.util.List;
 
-import io.reactivex.MaybeObserver;
+import io.reactivex.Observable;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 public class ProfileCreationActivity extends AppCompatActivity {
@@ -50,7 +52,6 @@ public class ProfileCreationActivity extends AppCompatActivity {
     private TextView cancelButton;
     private PackageManager pm;
     private ProgressBar progressBar;
-    private  RoomApplicationDatabase db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,7 +126,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 if (status == -1) {
                     profileNameInput.setError("This profile already exists");
                 } else {
-                    Toast.makeText(ProfileCreationActivity.this,
+                    Toast.makeText(ProfileCreationActivity.this.getApplicationContext(),
                             "Profile '" + profileName + "' created", Toast.LENGTH_LONG).show();
                     finish();
                 }
@@ -140,7 +141,6 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 whitelistedApplicationList.clear();
                 // FIXME This is bad ;-;
                 applicationArrayList = new ArrayList<>();
-                retrieveApplicationListFromDatabase();
                 applicationAdapter.notifyDataSetChanged();
                 applicationListRecycler.setAdapter(null);
                 applicationListRecycler.setAdapter(applicationAdapter);
@@ -150,31 +150,43 @@ public class ProfileCreationActivity extends AppCompatActivity {
             }
         });
 
-        retrieveApplicationListFromDatabase();
+        retrieveApplicationList();
     }
 
-    public void retrieveApplicationListFromDatabase() {
+    public void retrieveApplicationList() {
 
-        RoomApplicationDatabase db = RoomApplicationDatabase.getInstance(this);
+        Intent mainIntent = new Intent(Intent.ACTION_MAIN);
+        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        db.applicationDao().getApplications()
+        final PackageManager pm = getPackageManager();
+
+        Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                 .subscribeOn(Schedulers.io())
+                // RxJava FTW <3 <3
+                .observeOn(Schedulers.io())
+                .doOnNext(new Consumer<ApplicationInfo>() {
+                    @Override
+                    public void accept(ApplicationInfo applicationInfo) throws Exception {
+                        Application a = new Application(
+                                applicationInfo.name,
+                                applicationInfo.packageName,
+                                pm.getPackageInfo(applicationInfo.packageName, 0).versionName,
+                                ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(applicationInfo.loadIcon(pm)))
+                        );
+                        applicationArrayList.add(a);
+                    }
+                })
+                // RxAndroid FTW
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new MaybeObserver<List<Application>>() {
+                .subscribe(new Observer<ApplicationInfo>() {
                     @Override
                     public void onSubscribe(Disposable d) {
-                        TransitionManager.beginDelayedTransition((ViewGroup) ProfileCreationActivity.this.findViewById(android.R.id.content));
-                        applicationListRecycler.setVisibility(View.GONE);
                         progressBar.setVisibility(View.VISIBLE);
                     }
 
                     @Override
-                    public void onSuccess(List<Application> applications) {
-                        applicationArrayList.addAll(applications);
-                        applicationAdapter.notifyDataSetChanged();
-                        TransitionManager.beginDelayedTransition((ViewGroup) ProfileCreationActivity.this.findViewById(android.R.id.content));
-                        applicationListRecycler.setVisibility(View.VISIBLE);
-                        progressBar.setVisibility(View.GONE);
+                    public void onNext(ApplicationInfo applicationInfo) {
+
                     }
 
                     @Override
@@ -184,10 +196,9 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete() {
-
+                        progressBar.setVisibility(View.GONE);
+                        applicationAdapter.notifyDataSetChanged();
                     }
                 });
-
-
     }
 }
