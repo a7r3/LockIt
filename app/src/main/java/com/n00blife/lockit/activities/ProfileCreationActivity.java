@@ -21,8 +21,9 @@ import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
-import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
+import com.n00blife.lockit.database.ProfileDatabase;
 import com.n00blife.lockit.model.Application;
+import com.n00blife.lockit.model.Profile;
 import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
@@ -121,15 +122,15 @@ public class ProfileCreationActivity extends AppCompatActivity {
                     pkgList.add(a.getApplicationPackageName());
                 }
 
-                int status = WhiteListedApplicationDatabase.getInstance(ProfileCreationActivity.this).createProfile(profileName, pkgList);
+                ProfileDatabase.getInstance(ProfileCreationActivity.this).profileDao().createProfile(new Profile(profileName, pkgList));
 
-                if (status == -1) {
-                    profileNameInput.setError("This profile already exists");
-                } else {
+//                if (status == -1) {
+//                    profileNameInput.setError("This profile already exists");
+//                } else {
                     Toast.makeText(ProfileCreationActivity.this.getApplicationContext(),
                             "Profile '" + profileName + "' created", Toast.LENGTH_LONG).show();
                     finish();
-                }
+//                }
             }
         });
 

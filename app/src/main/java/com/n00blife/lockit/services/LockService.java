@@ -21,10 +21,11 @@ import android.util.Log;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.activities.PostLockdownActivity;
-import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
+import com.n00blife.lockit.database.ProfileDatabase;
 import com.n00blife.lockit.util.Constants;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
@@ -43,7 +44,7 @@ public class LockService extends Service {
     private final String TAG = getClass().getSimpleName();
     private final IBinder binder = new LocalBinder();
     private ArrayList<String> allApplicationPackages = new ArrayList<>();
-    private ArrayList<String> whitelistedApplicationPackages;
+    private List<String> whitelistedApplicationPackages;
     private Observable<Long> timerObservable;
     private Observer<Long> timerObserver;
 
@@ -67,9 +68,11 @@ public class LockService extends Service {
                 })
                 .subscribe();
 
-        whitelistedApplicationPackages = WhiteListedApplicationDatabase
+        whitelistedApplicationPackages = ProfileDatabase
                 .getInstance(this)
-                .getPackageListForProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME));
+                .profileDao()
+                .getProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME))
+                .getPackageList();
 
         timerObservable = Observable
                 .intervalRange(0, intent.getIntExtra(Constants.EXTRA_TIMER, 1) * 60, 0, 1L, TimeUnit.SECONDS)

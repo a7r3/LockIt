@@ -7,7 +7,7 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
+
 import androidx.fragment.app.Fragment;
 import androidx.core.content.ContextCompat;
 import androidx.appcompat.app.AlertDialog;
@@ -24,7 +24,7 @@ import android.widget.NumberPicker;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.ProfileCreationActivity;
 import com.n00blife.lockit.adapter.ProfileAdapter;
-import com.n00blife.lockit.database.WhiteListedApplicationDatabase;
+import com.n00blife.lockit.database.ProfileDatabase;
 import com.n00blife.lockit.model.Profile;
 import com.n00blife.lockit.services.LockService;
 import com.n00blife.lockit.util.Constants;
@@ -109,9 +109,9 @@ public class ProfileFragment extends Fragment {
         });
 
         if (profiles.isEmpty()) {
-            WhiteListedApplicationDatabase whiteListedApplicationDatabase = WhiteListedApplicationDatabase.getInstance(getActivity());
+            ProfileDatabase whiteListedApplicationDatabase = ProfileDatabase.getInstance(getActivity());
 
-            Observable.fromIterable(whiteListedApplicationDatabase.getProfiles())
+            Observable.fromIterable(whiteListedApplicationDatabase.profileDao().getAllProfiles())
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(new Observer<Profile>() {
@@ -145,9 +145,10 @@ public class ProfileFragment extends Fragment {
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 if(direction == LEFT) {
-                    WhiteListedApplicationDatabase
+                    ProfileDatabase
                             .getInstance(getContext())
-                            .deleteProfile(profiles.get(viewHolder.getAdapterPosition()).getProfileName());
+                            .profileDao()
+                            .deleteProfile(profiles.get(viewHolder.getAdapterPosition()));
                     profiles.remove(viewHolder.getAdapterPosition());
                     adapter.notifyItemRemoved(viewHolder.getAdapterPosition());
                     if (adapter.profileArrayList.size() == 0) {
