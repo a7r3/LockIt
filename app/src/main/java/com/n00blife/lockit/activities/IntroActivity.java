@@ -7,12 +7,14 @@ import android.preference.PreferenceManager;
 import androidx.annotation.Nullable;
 import com.google.android.material.tabs.TabLayout;
 
+import androidx.transition.TransitionManager;
 import androidx.viewpager.widget.ViewPager;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ProgressBar;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.IntroAdapter;
@@ -81,8 +83,14 @@ public class IntroActivity extends AppCompatActivity {
         viewPager.setCurrentItem(0, true);
 
         getStartedButton = findViewById(R.id.get_started_button);
+        ProgressBar progressBar = findViewById(R.id.loader_progress);
 
         parent = findViewById(android.R.id.content);
+
+        TransitionManager.beginDelayedTransition(parent);
+        progressBar.setVisibility(View.GONE);
+        getStartedButton.setVisibility(View.VISIBLE);
+
 
         getStartedButton.setOnClickListener(new View.OnClickListener() {
             @Override

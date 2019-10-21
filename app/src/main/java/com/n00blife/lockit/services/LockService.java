@@ -34,6 +34,7 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
@@ -56,35 +57,44 @@ public class LockService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent != null && intent.getAction() != null) {
+            Log.d(TAG, "onStartCommand: IN IT BOI");
+            final String selectedProfile = intent.getStringExtra(Constants.EXTRA_PROFILE_NAME);
+            final int time = intent.getIntExtra(Constants.EXTRA_TIMER, 1);
+            Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(Schedulers.io())
+                    .doOnNext(new Consumer<ApplicationInfo>() {
+                        @Override
+                        public void accept(ApplicationInfo applicationInfo) {
+                            allApplicationPackages.add(applicationInfo.packageName);
+                        }
+                    })
+                    .doOnComplete(new Action() {
+                        @Override
+                        public void run() throws Exception {
+                            whitelistedApplicationPackages = ProfileDatabase
+                                    .getInstance(LockService.this)
+                                    .profileDao()
+                                    .getProfile(selectedProfile)
+                                    .getPackageList();
 
-        Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .doOnNext(new Consumer<ApplicationInfo>() {
-                    @Override
-                    public void accept(ApplicationInfo applicationInfo) {
-                        allApplicationPackages.add(applicationInfo.packageName);
-                    }
-                })
-                .subscribe();
+                            timerObservable = Observable
+                                    .intervalRange(0, time * 60, 0, 1L, TimeUnit.SECONDS)
+                                    .subscribeOn(Schedulers.io());
 
-        whitelistedApplicationPackages = ProfileDatabase
-                .getInstance(this)
-                .profileDao()
-                .getProfile(intent.getStringExtra(Constants.EXTRA_PROFILE_NAME))
-                .getPackageList();
+                            initTimerObserver();
 
-        timerObservable = Observable
-                .intervalRange(0, intent.getIntExtra(Constants.EXTRA_TIMER, 1) * 60, 0, 1L, TimeUnit.SECONDS)
-                .subscribeOn(Schedulers.io());
+                            timerObservable.subscribe(timerObserver);
 
-        initTimerObserver();
+                            Log.d(TAG, "Apps: " + allApplicationPackages.size());
+                            Log.d(TAG, "WhiteApps: " + whitelistedApplicationPackages.size());
 
-        timerObservable.subscribe(timerObserver);
+                        }
+                    })
+                    .subscribe();
 
-        Log.d(TAG, "Apps: " + allApplicationPackages.size());
-        Log.d(TAG, "WhiteApps: " + whitelistedApplicationPackages.size());
-
+        }
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -137,6 +147,7 @@ public class LockService extends Service {
                                         return;
                                     if (!whitelistedApplicationPackages.contains(pkg) && allApplicationPackages.contains(pkg)) {
                                         Intent intent = new Intent(LockService.this, LockActivity.class);
+                                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
                                         LockService.this.startActivity(intent);
                                     }

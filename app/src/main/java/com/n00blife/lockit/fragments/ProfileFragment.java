@@ -31,11 +31,14 @@ import com.n00blife.lockit.util.Constants;
 import com.n00blife.lockit.util.ItemSwipeListener;
 
 import java.util.ArrayList;
+import java.util.List;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
 import static androidx.recyclerview.widget.ItemTouchHelper.LEFT;
@@ -81,6 +84,7 @@ public class ProfileFragment extends Fragment {
                                 Intent lockServiceIntent = new Intent(getActivity(), LockService.class);
                                 lockServiceIntent.putExtra(Constants.EXTRA_TIMER, numberPicker.getValue());
                                 lockServiceIntent.putExtra(Constants.EXTRA_PROFILE_NAME, profile.getProfileName());
+                                lockServiceIntent.setAction("lockit");
                                 ContextCompat.startForegroundService(getActivity(), lockServiceIntent);
                                 getActivity().finish();
                             }
@@ -111,27 +115,15 @@ public class ProfileFragment extends Fragment {
         if (profiles.isEmpty()) {
             ProfileDatabase whiteListedApplicationDatabase = ProfileDatabase.getInstance(getActivity());
 
-            Observable.fromIterable(whiteListedApplicationDatabase.profileDao().getAllProfiles())
+
+            whiteListedApplicationDatabase.profileDao().getAllProfiles()
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(new Observer<Profile>() {
+                    .subscribe(new Consumer<List<Profile>>() {
                         @Override
-                        public void onSubscribe(Disposable d) {
-
-                        }
-
-                        @Override
-                        public void onNext(Profile profile) {
-                            profiles.add(profile);
-                        }
-
-                        @Override
-                        public void onError(Throwable e) {
-
-                        }
-
-                        @Override
-                        public void onComplete() {
+                        public void accept(List<Profile> profiles) throws Exception {
+                            ProfileFragment.this.profiles.clear();
+                            ProfileFragment.this.profiles.addAll(profiles);
                             if (profiles.size() == 0) {
                                 noProfileContainer.setVisibility(View.VISIBLE);
                                 profileListView.setVisibility(View.GONE);

@@ -12,6 +12,8 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import io.reactivex.Observable;
+
 @Dao
 public interface ProfileDao {
 
@@ -19,7 +21,7 @@ public interface ProfileDao {
     Profile getProfile(String profileName);
 
     @Query("SELECT * FROM whitelist_profiles")
-    List<Profile> getAllProfiles();
+    Observable<List<Profile>> getAllProfiles();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void createProfile(Profile profile);

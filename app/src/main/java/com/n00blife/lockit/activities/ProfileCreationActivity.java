@@ -3,6 +3,7 @@ package com.n00blife.lockit.activities;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import com.google.android.material.textfield.TextInputLayout;
@@ -28,6 +29,7 @@ import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
 import java.util.ArrayList;
+import java.util.concurrent.Executors;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -107,14 +109,14 @@ public class ProfileCreationActivity extends AppCompatActivity {
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String profileName = profileNameInput.getText().toString();
+                final String profileName = profileNameInput.getText().toString();
 
                 if (profileName.equals("")) {
                     profileNameInput.setError("Profile Name cannot be empty");
                     return;
                 }
 
-                ArrayList<String> pkgList = new ArrayList<>();
+                final ArrayList<String> pkgList = new ArrayList<>();
 
                 Log.d(TAG, "Creating Profile " + profileName);
 
@@ -122,7 +124,12 @@ public class ProfileCreationActivity extends AppCompatActivity {
                     pkgList.add(a.getApplicationPackageName());
                 }
 
-                ProfileDatabase.getInstance(ProfileCreationActivity.this).profileDao().createProfile(new Profile(profileName, pkgList));
+                Executors.newSingleThreadExecutor().execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        ProfileDatabase.getInstance(ProfileCreationActivity.this).profileDao().createProfile(new Profile(profileName, pkgList));
+                    }
+                });
 
 //                if (status == -1) {
 //                    profileNameInput.setError("This profile already exists");
@@ -161,44 +168,40 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
         final PackageManager pm = getPackageManager();
 
-        Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
+        Observable.fromIterable(getPackageManager().queryIntentActivities(mainIntent, 0))
                 .subscribeOn(Schedulers.io())
-                // RxJava FTW <3 <3
-                .observeOn(Schedulers.io())
-                .doOnNext(new Consumer<ApplicationInfo>() {
-                    @Override
-                    public void accept(ApplicationInfo applicationInfo) throws Exception {
-                        Application a = new Application(
-                                applicationInfo.name,
-                                applicationInfo.packageName,
-                                pm.getPackageInfo(applicationInfo.packageName, 0).versionName,
-                                ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(applicationInfo.loadIcon(pm)))
-                        );
-                        applicationArrayList.add(a);
-                    }
-                })
-                // RxAndroid FTW
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ApplicationInfo>() {
+                .subscribe(new Observer<ResolveInfo>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                         progressBar.setVisibility(View.VISIBLE);
                     }
 
                     @Override
-                    public void onNext(ApplicationInfo applicationInfo) {
-
+                    public void onNext(ResolveInfo resolveInfo) {
+                        try {
+                            Application a = new Application(
+                                    resolveInfo.loadLabel(getPackageManager()).toString(),
+                                    resolveInfo.activityInfo.packageName,
+                                    getPackageManager().getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
+                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(getPackageManager())))
+                            );
+                            applicationArrayList.add(a);
+                        } catch (PackageManager.NameNotFoundException nnfe) {
+                            nnfe.printStackTrace();
+                        }
                     }
 
                     @Override
                     public void onError(Throwable e) {
-
+                        e.printStackTrace();
                     }
 
                     @Override
                     public void onComplete() {
                         progressBar.setVisibility(View.GONE);
                         applicationAdapter.notifyDataSetChanged();
+                        applicationListRecycler.setVisibility(View.VISIBLE);
                     }
                 });
     }
