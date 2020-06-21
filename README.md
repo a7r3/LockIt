@@ -21,7 +21,8 @@ Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in
 ## Issues / TODO
 
 * Big TODO: Use Bluetooth/WiFi P2P based communication. Can eliminate the "overkill" requirement of a hosted function.
-
+  - Suggestions are welcome for this. The issue is that neither of this communication methods can be kicked off in the background, easily.
+  
 ## Working
 
 Android TV (Locked Device) + Phone (Key):
