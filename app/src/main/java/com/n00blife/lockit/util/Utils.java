@@ -125,6 +125,7 @@ public class Utils {
 
     public static void startLockService(Context context) {
         Intent lockServiceIntent = new Intent(context, LockService.class);
+        lockServiceIntent.setAction(context.getPackageName());
         ContextCompat.startForegroundService(context, lockServiceIntent);
     }
 }

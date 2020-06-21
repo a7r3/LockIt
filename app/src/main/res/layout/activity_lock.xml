@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#202020">
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -10,8 +11,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/application_icon_group"
-        android:alpha="0.4"
+        app:layout_constraintTop_toTopOf="@id/application_icon_group"
+        android:alpha="0.3"
         android:background="@drawable/tv_main_gradient"/>
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
