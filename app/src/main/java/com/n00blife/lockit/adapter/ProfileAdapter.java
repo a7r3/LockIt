@@ -11,18 +11,18 @@ import android.widget.TextView;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.model.Application;
-import com.n00blife.lockit.model.Profile;
+import com.n00blife.lockit.model.Blacklist;
 import com.n00blife.lockit.util.ImageUtils;
 
 import java.util.ArrayList;
 
 public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHolder> {
 
-    public ArrayList<Profile> profileArrayList;
+    public ArrayList<Blacklist> profileArrayList;
     private Context context;
     private OnItemClickedListener onItemClickedListener;
 
-    public ProfileAdapter(Context context, ArrayList<Profile> profileArrayList) {
+    public ProfileAdapter(Context context, ArrayList<Blacklist> profileArrayList) {
         this.context = context;
         this.profileArrayList = profileArrayList;
     }
@@ -61,7 +61,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
     }
 
     public interface OnItemClickedListener {
-        public void onItemClick(int position, Profile profile);
+        public void onItemClick(int position, Blacklist profile);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

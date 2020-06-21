@@ -1,11 +1,7 @@
 package com.n00blife.lockit.activities;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.os.Build;
 import android.os.Bundle;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import com.google.android.material.textfield.TextInputLayout;
@@ -24,22 +20,15 @@ import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
-import com.n00blife.lockit.database.ProfileDatabase;
+import com.n00blife.lockit.database.BlacklistDatabase;
 import com.n00blife.lockit.model.Application;
-import com.n00blife.lockit.model.Profile;
-import com.n00blife.lockit.util.ImageUtils;
+import com.n00blife.lockit.model.Blacklist;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
+import com.n00blife.lockit.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
-
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 
 public class ProfileCreationActivity extends AppCompatActivity {
 
@@ -130,7 +119,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 Executors.newSingleThreadExecutor().execute(new Runnable() {
                     @Override
                     public void run() {
-                        ProfileDatabase.getInstance(ProfileCreationActivity.this).profileDao().createProfile(new Profile(profileName, pkgList));
+                        BlacklistDatabase.getInstance(ProfileCreationActivity.this).profileDao().createBlacklist(new Blacklist(pkgList));
                     }
                 });
 
@@ -161,7 +150,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
             }
         });
 
-        retrieveApplicationList(this, new AppRetrivalInterface() {
+        Utils.retrieveApplicationList(this, new Utils.AppRetrivalInterface() {
             @Override
             public void onProgress() {
                 progressBar.setVisibility(View.VISIBLE);
@@ -175,58 +164,6 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 progressBar.setVisibility(View.GONE);
             }
         });
-    }
-
-    public interface AppRetrivalInterface {
-        void onProgress();
-        void onComplete(List<Application> applications);
-    }
-    public static void retrieveApplicationList(Context context, final AppRetrivalInterface appRetrivalInterface) {
-
-        Intent mainIntent = new Intent(Intent.ACTION_MAIN);
-        if (MainActivity.isRunningOnTv(context))
-            mainIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
-        else
-            mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        final PackageManager pm = context.getPackageManager();
-
-        final ArrayList<Application> applicationArrayList = new ArrayList<>();
-
-        Observable.fromIterable(pm.queryIntentActivities(mainIntent, 0))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<ResolveInfo>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                        appRetrivalInterface.onProgress();
-                    }
-
-                    @Override
-                    public void onNext(ResolveInfo resolveInfo) {
-                        try {
-                            Application a = new Application(
-                                    resolveInfo.loadLabel(pm).toString(),
-                                    resolveInfo.activityInfo.packageName,
-                                    pm.getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
-                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(pm)))
-                            );
-                            applicationArrayList.add(a);
-                        } catch (PackageManager.NameNotFoundException nnfe) {
-                            nnfe.printStackTrace();
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        e.printStackTrace();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        appRetrivalInterface.onComplete(applicationArrayList);
-                    }
-                });
     }
 
 }

@@ -21,7 +21,7 @@ import android.util.Log;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.activities.PostLockdownActivity;
-import com.n00blife.lockit.database.ProfileDatabase;
+import com.n00blife.lockit.database.BlacklistDatabase;
 import com.n00blife.lockit.util.Constants;
 
 import java.util.ArrayList;
@@ -59,7 +59,6 @@ public class LockService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
-            Log.d(TAG, "onStartCommand: IN IT BOI");
 
             Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                     .subscribeOn(Schedulers.io())
@@ -73,10 +72,10 @@ public class LockService extends Service {
                     .doOnComplete(new Action() {
                         @Override
                         public void run() throws Exception {
-                            blackList = ProfileDatabase
+                            blackList = BlacklistDatabase
                                     .getInstance(LockService.this)
                                     .profileDao()
-                                    .getProfile("default")
+                                    .getBlacklist()
                                     .getPackageList();
 
                             timerObservable = Observable
@@ -86,9 +85,6 @@ public class LockService extends Service {
                             initTimerObserver();
 
                             timerObservable.subscribe(timerObserver);
-
-                            Log.d(TAG, "Apps: " + allApplicationPackages.size());
-                            Log.d(TAG, "WhiteApps: " + blackList.size());
 
                         }
                     })

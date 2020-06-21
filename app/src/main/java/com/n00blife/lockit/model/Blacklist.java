@@ -9,17 +9,16 @@ import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
-@Entity(tableName = "whitelist_profiles")
-public class Profile {
+@Entity(tableName = "apps")
+public class Blacklist {
 
     @PrimaryKey
     @NonNull
-    String profileName;
+    String profileName = "default";
 
     ArrayList<String> packageList;
 
-    public Profile(String profileName, ArrayList<String> packageList) {
-        this.profileName = profileName;
+    public Blacklist(ArrayList<String> packageList) {
         this.packageList = packageList;
     }
 

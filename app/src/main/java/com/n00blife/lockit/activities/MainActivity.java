@@ -31,22 +31,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.n00blife.lockit.R;
-import com.n00blife.lockit.fragments.AboutFragment;
-import com.n00blife.lockit.fragments.AppPreferenceFragment;
 import com.n00blife.lockit.fragments.ProfileFragment;
 
 public class MainActivity extends AppCompatActivity {
 
-    private BottomNavigationView bottomNavigationView;
     private ProfileFragment profileFragment = new ProfileFragment();
-    private AboutFragment aboutFragment = new AboutFragment();
-    private AppPreferenceFragment appPreferenceFragment = new AppPreferenceFragment();
-    private int previousSelectedItemResId;
-
-    public static boolean isRunningOnTv(Context context) {
-        UiModeManager uiModeManager = (UiModeManager) context.getSystemService(UI_MODE_SERVICE);
-        return uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION;
-    }
 
     private int RESULT = 23;
 
@@ -58,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
                 getPackageName());
 
         if(mode == AppOpsManager.MODE_DEFAULT) {
-            Log.d("MAINRESULT", "Trouble");
             isPermissionGranted = checkCallingOrSelfPermission(Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED;
         } else {
             isPermissionGranted = (mode == AppOpsManager.MODE_ALLOWED);
@@ -99,8 +87,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         profileFragment = new ProfileFragment();
-        aboutFragment = new AboutFragment();
-        appPreferenceFragment = new AppPreferenceFragment();
 
         AlertDialog.Builder usageStatDialogBuilder = new AlertDialog.Builder(this)
                 .setMessage(getString(R.string.usage_status_prompt_messsage))
@@ -118,51 +104,11 @@ public class MainActivity extends AppCompatActivity {
         if(!isUsageStatsPermissionGranted())
             usageStatDialog.show();
 
-        bottomNavigationView = findViewById(R.id.main_navbar);
-
-        bottomNavigationView.getMenu().getItem(0).setChecked(true);
-
         getSupportFragmentManager()
                 .beginTransaction()
                 .replace(R.id.main_fragment_layout, profileFragment, profileFragment.getClass().getSimpleName())
                 .commit();
 
-        previousSelectedItemResId = R.id.profiles_item;
-
-        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-
-                if (previousSelectedItemResId == item.getItemId())
-                    return false;
-
-                Fragment fragment;
-
-                switch (item.getItemId()) {
-                    case R.id.profiles_item:
-                        previousSelectedItemResId = R.id.profiles_item;
-                        fragment = profileFragment;
-                        break;
-                    case R.id.preferences_item:
-                        previousSelectedItemResId = R.id.preferences_item;
-                        fragment = appPreferenceFragment;
-                        break;
-                    case R.id.about_item:
-                        previousSelectedItemResId = R.id.about_item;
-                        fragment = aboutFragment;
-                        break;
-                    default:
-                        return false;
-                }
-
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
-                        .replace(R.id.main_fragment_layout, fragment, fragment.getClass().getSimpleName())
-                        .commit();
-                return true;
-            }
-        });
     }
 
 }

@@ -1,7 +1,6 @@
 package com.n00blife.lockit.tv;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -18,14 +17,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.n00blife.lockit.R;
-import com.n00blife.lockit.activities.MainActivity;
-import com.n00blife.lockit.activities.ProfileCreationActivity;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
-import com.n00blife.lockit.database.ProfileDatabase;
+import com.n00blife.lockit.database.BlacklistDatabase;
 import com.n00blife.lockit.model.Application;
-import com.n00blife.lockit.model.Profile;
+import com.n00blife.lockit.model.Blacklist;
 import com.n00blife.lockit.services.LockService;
-import com.n00blife.lockit.util.Constants;
+import com.n00blife.lockit.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,7 +66,7 @@ public class TvMainActivity extends Activity {
                     pkgList.add(a.getApplicationPackageName());
                 }
 
-                ProfileDatabase.getInstance(TvMainActivity.this).profileDao().createProfile(new Profile("default", pkgList));
+                BlacklistDatabase.getInstance(TvMainActivity.this).profileDao().createBlacklist(new Blacklist(pkgList));
                 Toast.makeText(TvMainActivity.this, "Start!", Toast.LENGTH_LONG).show();
                 Intent lockServiceIntent = new Intent(TvMainActivity.this, LockService.class);
                 lockServiceIntent.setAction("lockit_tv");
@@ -78,7 +75,7 @@ public class TvMainActivity extends Activity {
             }
         });
 
-        ProfileCreationActivity.retrieveApplicationList(this, new ProfileCreationActivity.AppRetrivalInterface() {
+        Utils.retrieveApplicationList(this, new Utils.AppRetrivalInterface() {
             @Override
             public void onProgress() {
 
@@ -86,7 +83,7 @@ public class TvMainActivity extends Activity {
 
             @Override
             public void onComplete(List<Application> applications) {
-                TvMainActivity.this.applications.addAll(applications);
+                TvMainActivity.this.applications.addAll(Utils.applyBlacklistData(TvMainActivity.this, applications));
                 appList.setAdapter(adapter);
             }
         });
