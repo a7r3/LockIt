@@ -1,30 +1,37 @@
-# LockIt (WIP)
+# LockIt
 
-**Name's not confirmed, yet**
+Digital Well-being for Android TVs, managed!
 
-Application which sets a timer, within which the child is allowed to use a restricted set of Apps.
+Android-TV + Phone: Application which locks down selected apps for a child, which can only be unlocked from a Parent's device.
+
+Phone (Redevelopment TODO): Application which sets a timer, within which the child is allowed to use a restricted set of Apps
+
+## ... Why?
+
+With the day-to-day work by parents, it becomes a difficulty to manage their child's device usage. When given a device with the child assuring "I'll play for 5 mins plsplspls", it usually doesn't happen that way, and the child ends up using for hours :laugh:.
+
+Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in the big picture. Let's not underestimate a child's image processing abilities to pick up the PIN.
 
 ## Features
 
-* Apps other than the Whitelisted apps won't be opened
+* Android TV + Phone: Remotely Lock/Unlock Android TV device. No requirement to enter PIN in the TV.
 
-* Create Profiles, which vary in the Apps whitelisted
-  - (TODO) Delete Profiles
-
-* Create a Profile with the Apps to be Whitelisted
-
-* (TODO) Trigger a profile with a Wrist-Twist Gesture
-  - Can be done using a Foreground Service (Background in API < 26) which constantly awaits for the gesture
-  - May Consume battery, would add only if the battery consumption is minimal
+* Phone: Decide the time within which child can use restricted apps. Phone Locks once time's over.
 
 ## Issues / TODO
 
-* To find a way of updating the package list whenever a package is replaced/installed/uninstalled
+* Big TODO: Use Bluetooth/WiFi P2P based communication. Can eliminate the "overkill" requirement of a hosted function.
 
 ## Working
 
-1. On triggering a profile, all apps other than the whitelisted apps won't be allowed to open
-   - Whitelisted apps would open
+Android TV (Locked Device) + Phone (Key):
+1. Lock can either be started manually in the TV App OR can be done directly from the phone
+2. Restricted set of apps will be accessible to the child
+3. Parent can unlock the TV device from their phone, with Biometric ID before every Lock/Unlock transaction
+
+Phone (Redevelopment TODO, not present rn):
+
+1. Upon Locking, selected apps won't open up.
 2. Above two restrictions are applied for a given time limit by the parent
 3. On crossing the time limit, the Phone is Locked (Sent to Lockscreen)
 
