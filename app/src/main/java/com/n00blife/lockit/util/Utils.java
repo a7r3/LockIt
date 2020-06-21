@@ -9,9 +9,13 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 
+import androidx.core.content.ContextCompat;
+
 import com.n00blife.lockit.database.BlacklistDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Blacklist;
+import com.n00blife.lockit.services.LockService;
+import com.n00blife.lockit.tv.TvMainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +54,7 @@ public class Utils {
         void onComplete(List<Application> applications);
     }
 
-    public static void retrieveApplicationList(Context context, final AppRetrivalInterface appRetrivalInterface) {
+    public static void retrieveApplicationList(final Context context, final AppRetrivalInterface appRetrivalInterface) {
 
         Intent mainIntent = new Intent(Intent.ACTION_MAIN);
         if (Utils.isRunningOnTv(context))
@@ -80,7 +84,8 @@ public class Utils {
                                     pm.getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
                                     ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(pm)))
                             );
-                            applicationArrayList.add(a);
+                            if (!a.getApplicationPackageName().equals(context.getPackageName()))
+                                applicationArrayList.add(a);
                         } catch (PackageManager.NameNotFoundException nnfe) {
                             nnfe.printStackTrace();
                         }
@@ -111,8 +116,15 @@ public class Utils {
         for (Application a : applications) {
             if (blacklistedApps.contains(a.getApplicationPackageName()))
                 a.setSelected(true);
+            else
+                a.setSelected(false);
         }
 
         return applications;
+    }
+
+    public static void startLockService(Context context) {
+        Intent lockServiceIntent = new Intent(context, LockService.class);
+        ContextCompat.startForegroundService(context, lockServiceIntent);
     }
 }

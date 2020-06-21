@@ -24,7 +24,7 @@
         android:supportsRtl="true">
         <activity
             android:name=".tv.TvMainActivity"
-            android:banner="@drawable/addiction"
+            android:banner="@drawable/banner"
             android:screenOrientation="landscape"
             android:theme="@style/TVAppTheme">
             <intent-filter>

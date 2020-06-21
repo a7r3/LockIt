@@ -6,24 +6,94 @@
     android:layout_height="match_parent"
     tools:context=".tv.TvMainActivity">
 
-    <TextView
-        android:id="@+id/title"
-        app:layout_constraintTop_toTopOf="parent"
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:alpha="0.3"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/tv_main_gradient"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textAppearance="@style/TextAppearance.Leanback.Title"
-        android:padding="36dp"/>
+        android:id="@+id/title"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-    <Button
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TextAppearance.Leanback.Title" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Choose apps to be restricted"
+            android:textSize="18sp"
+            android:layout_marginTop="4dp"/>
+
+
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:padding="16dp"
+        android:gravity="center"
+        android:nextFocusLeft="@id/apps_list"
+        android:background="@drawable/normal_button_state"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/title"
+        app:layout_constraintBottom_toBottomOf="@id/title"
+        app:layout_constraintEnd_toStartOf="@id/reset"
+        android:nextFocusRight="@id/reset"
+        android:nextFocusDown="@id/apps_list"
+        android:layout_marginEnd="8dp"
+        android:id="@+id/select_all"
+        android:text="Select All" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAllCaps="true"
+        android:background="@drawable/normal_button_state"
+        android:gravity="center"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:padding="16dp"
+        android:id="@+id/reset"
+        android:nextFocusDown="@id/apps_list"
+        android:nextFocusLeft="@id/select_all"
+        android:nextFocusRight="@id/start_session"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/title"
+        app:layout_constraintBottom_toBottomOf="@id/title"
+        app:layout_constraintEnd_toStartOf="@id/start_session"
+        android:layout_marginEnd="8dp"
+        android:text="Reset" />
+
+    <TextView
         android:id="@+id/start_session"
         android:layout_width="wrap_content"
         android:padding="16dp"
         android:focusedByDefault="true"
-        android:backgroundTint="@color/colorAccent"
+        android:text="Lock Now"
+        android:gravity="center"
+        android:background="@drawable/primary_button_state"
+        android:textColor="@color/colorAccent"
         android:layout_height="wrap_content"
-        android:text="Start"
+        android:textAllCaps="true"
+        android:textStyle="bold"
+        android:textSize="20sp"
         android:nextFocusDown="@id/apps_list"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/title"
@@ -35,7 +105,11 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         tools:listitem="@layout/app_item"
-        android:padding="4dp"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="4"
+        android:paddingTop="4dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -32,7 +33,7 @@ public class TvMainActivity extends Activity {
     ArrayList<Application> applications = new ArrayList<>();
     RecyclerView appList;
     ApplicationAdapter adapter;
-    Button startSession;
+    TextView selectAll, resetOptions, startSession;
     private final String TAG = getClass().getSimpleName();
 
     @Override
@@ -40,16 +41,18 @@ public class TvMainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tv_main);
         appList = findViewById(R.id.apps_list);
-        GridLayoutManager layoutManager = new GridLayoutManager(this, 4);
+        GridLayoutManager layoutManager = new GridLayoutManager(this, 4, RecyclerView.VERTICAL, false);
         appList.setLayoutManager(layoutManager);
         adapter = new ApplicationAdapter(this, applications, R.layout.app_item);
 
+        // Remote Lock (only for Android TVs) - Don't copy it over to Phone Impl
         FirebaseMessaging.getInstance().subscribeToTopic("locker").addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 Log.d(TAG, "onComplete: Subbed!");
             }
         });
+
         startSession = findViewById(R.id.start_session);
         startSession.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -67,11 +70,28 @@ public class TvMainActivity extends Activity {
                 }
 
                 BlacklistDatabase.getInstance(TvMainActivity.this).profileDao().createBlacklist(new Blacklist(pkgList));
-                Toast.makeText(TvMainActivity.this, "Start!", Toast.LENGTH_LONG).show();
-                Intent lockServiceIntent = new Intent(TvMainActivity.this, LockService.class);
-                lockServiceIntent.setAction("lockit_tv");
-                ContextCompat.startForegroundService(TvMainActivity.this, lockServiceIntent);
+                Toast.makeText(TvMainActivity.this, "Device Locked", Toast.LENGTH_LONG).show();
+                Utils.startLockService(TvMainActivity.this);
                 finish();
+            }
+        });
+
+        resetOptions = findViewById(R.id.reset);
+        resetOptions.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Utils.applyBlacklistData(TvMainActivity.this, applications);
+                adapter.notifyDataSetChanged();
+            }
+        });
+
+        selectAll = findViewById(R.id.select_all);
+        selectAll.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for (Application a : applications)
+                    a.setSelected(true);
+                adapter.notifyDataSetChanged();
             }
         });
 
