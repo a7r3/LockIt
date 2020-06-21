@@ -2,12 +2,16 @@ package com.n00blife.lockit.activities;
 
 import android.Manifest;
 import android.app.AppOpsManager;
+import android.app.UiModeManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.content.res.Configuration;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.Settings;
@@ -38,6 +42,11 @@ public class MainActivity extends AppCompatActivity {
     private AboutFragment aboutFragment = new AboutFragment();
     private AppPreferenceFragment appPreferenceFragment = new AppPreferenceFragment();
     private int previousSelectedItemResId;
+
+    public static boolean isRunningOnTv(Context context) {
+        UiModeManager uiModeManager = (UiModeManager) context.getSystemService(UI_MODE_SERVICE);
+        return uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION;
+    }
 
     private int RESULT = 23;
 
@@ -76,10 +85,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Toast.makeText(MainActivity.this, "Permission Not Granted", Toast.LENGTH_LONG).show();
             }
+        } else if (requestCode == SYSTEM_ALERT_WINDOW_PERMISSION) {
+            Log.d("Main", "onActivityResult: good");
         }
     }
 
     private AlertDialog usageStatDialog;
+    private static final int SYSTEM_ALERT_WINDOW_PERMISSION = 2084;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {

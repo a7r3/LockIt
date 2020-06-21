@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -13,7 +14,9 @@ import com.n00blife.lockit.R;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.ImageUtils;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.ViewHolder> {
 
@@ -30,6 +33,15 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
 
     public void setOnItemClicked(onItemClicked onItemClicked) {
         this.onItemClicked = onItemClicked;
+    }
+
+    public List<Application> getSelectedApplications() {
+        ArrayList<Application> applications = new ArrayList<>();
+        for (Application a : applicationArrayList) {
+            if (a.isSelected())
+                applications.add(a);
+        }
+        return applications;
     }
 
     @NonNull
@@ -50,6 +62,7 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
             holder.applicationName.setText(applicationArrayList.get(position).getApplicationName());
         // Application list in Profile Layout
         holder.applicationIcon.setImageBitmap(ImageUtils.decodeBase64ToBitmap(applicationArrayList.get(position).getApplicationIconEncoded()));
+        holder.isSelectedForLock.setChecked(applicationArrayList.get(position).isSelected());
     }
 
     @Override
@@ -61,24 +74,31 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
         public void onHolderClick(int position, Application application);
     }
 
+    public void getSelectedApps() {
+
+    }
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView applicationIcon;
         TextView applicationName;
         TextView applicationPackageName;
         TextView applicationVersion;
+        CheckBox isSelectedForLock;
 
-        public ViewHolder(View itemView) {
+        public ViewHolder(final View itemView) {
             super(itemView);
             applicationIcon = itemView.findViewById(R.id.application_icon);
             applicationName = itemView.findViewById(R.id.application_name);
             applicationPackageName = itemView.findViewById(R.id.application_package_name);
             applicationVersion = itemView.findViewById(R.id.application_version);
+            isSelectedForLock = itemView.findViewById(R.id.checkbox);
+
             if (layoutResId != R.layout.app_item_grid_mini) {
                 itemView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        onItemClicked.onHolderClick(getAdapterPosition(), applicationArrayList.get(getAdapterPosition()));
+                        isSelectedForLock.toggle();
+                        applicationArrayList.get(getAdapterPosition()).setSelected(isSelectedForLock.isChecked());
                     }
                 });
             }

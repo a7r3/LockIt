@@ -45,9 +45,10 @@ public class LockService extends Service {
     private final String TAG = getClass().getSimpleName();
     private final IBinder binder = new LocalBinder();
     private ArrayList<String> allApplicationPackages = new ArrayList<>();
-    private List<String> whitelistedApplicationPackages;
+    private List<String> blackList;
     private Observable<Long> timerObservable;
     private Observer<Long> timerObserver;
+    private Disposable disposable;
 
     @Nullable
     @Override
@@ -59,8 +60,7 @@ public class LockService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
             Log.d(TAG, "onStartCommand: IN IT BOI");
-            final String selectedProfile = intent.getStringExtra(Constants.EXTRA_PROFILE_NAME);
-            final int time = intent.getIntExtra(Constants.EXTRA_TIMER, 1);
+
             Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                     .subscribeOn(Schedulers.io())
                     .observeOn(Schedulers.io())
@@ -73,14 +73,14 @@ public class LockService extends Service {
                     .doOnComplete(new Action() {
                         @Override
                         public void run() throws Exception {
-                            whitelistedApplicationPackages = ProfileDatabase
+                            blackList = ProfileDatabase
                                     .getInstance(LockService.this)
                                     .profileDao()
-                                    .getProfile(selectedProfile)
+                                    .getProfile("default")
                                     .getPackageList();
 
                             timerObservable = Observable
-                                    .intervalRange(0, time * 60, 0, 1L, TimeUnit.SECONDS)
+                                    .interval(0,  1L, TimeUnit.SECONDS)
                                     .subscribeOn(Schedulers.io());
 
                             initTimerObserver();
@@ -88,7 +88,7 @@ public class LockService extends Service {
                             timerObservable.subscribe(timerObserver);
 
                             Log.d(TAG, "Apps: " + allApplicationPackages.size());
-                            Log.d(TAG, "WhiteApps: " + whitelistedApplicationPackages.size());
+                            Log.d(TAG, "WhiteApps: " + blackList.size());
 
                         }
                     })
@@ -103,7 +103,7 @@ public class LockService extends Service {
         timerObserver = new Observer<Long>() {
             @Override
             public void onSubscribe(Disposable d) {
-
+                disposable = d;
             }
 
             @Override
@@ -145,7 +145,7 @@ public class LockService extends Service {
                                     // Don't block it
                                     if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
                                         return;
-                                    if (!whitelistedApplicationPackages.contains(pkg) && allApplicationPackages.contains(pkg)) {
+                                    if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
                                         Intent intent = new Intent(LockService.this, LockActivity.class);
                                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                         intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
@@ -170,8 +170,6 @@ public class LockService extends Service {
                         Log.d(TAG, "LockService Complete");
                     }
                 });
-
-                LockService.this.onDestroy();
             }
         };
     }
@@ -186,7 +184,7 @@ public class LockService extends Service {
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         String channelId = "lockservice";
-        int notificationId = 1;
+        int notificationId = 69;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel notificationChannel = new NotificationChannel(
@@ -214,6 +212,7 @@ public class LockService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        disposable.dispose();
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
         stopSelf();

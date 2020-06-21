@@ -12,6 +12,7 @@ public class Application {
     private String applicationPackageName;
     private String applicationVersion;
     private String applicationIconEncoded;
+    private boolean isSelected = false;
 
     public Application(String applicationName, String applicationPackageName, String applicationVersion, String applicationIconEncoded) {
         this.applicationName = applicationName;
@@ -32,33 +33,23 @@ public class Application {
         this.applicationIconEncoded = applicationIconEncoded;
     }
 
-    public boolean isAfter(Application toBeInserted) {
-        return getApplicationName().compareTo(toBeInserted.getApplicationName()) > 0;
-    }
-
-
     public String getApplicationName() {
         return applicationName;
-    }
-
-    public void setApplicationName(String applicationName) {
-        this.applicationName = applicationName;
     }
 
     public String getApplicationPackageName() {
         return applicationPackageName;
     }
 
-    public void setApplicationPackageName(String applicationPackageName) {
-        this.applicationPackageName = applicationPackageName;
-    }
-
     public String getApplicationVersion() {
         return applicationVersion;
     }
 
-    public void setApplicationVersion(String applicationVersion) {
-        this.applicationVersion = applicationVersion;
+    public boolean isSelected() {
+        return isSelected;
     }
 
+    public void setSelected(boolean selected) {
+        isSelected = selected;
+    }
 }

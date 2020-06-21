@@ -1,9 +1,11 @@
 package com.n00blife.lockit.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.Build;
 import android.os.Bundle;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import com.google.android.material.textfield.TextInputLayout;
@@ -29,6 +31,7 @@ import com.n00blife.lockit.util.ImageUtils;
 import com.n00blife.lockit.util.MarginDividerItemDecoration;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Executors;
 
 import io.reactivex.Observable;
@@ -158,33 +161,55 @@ public class ProfileCreationActivity extends AppCompatActivity {
             }
         });
 
-        retrieveApplicationList();
+        retrieveApplicationList(this, new AppRetrivalInterface() {
+            @Override
+            public void onProgress() {
+                progressBar.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onComplete(List<Application> applications) {
+                applicationArrayList.clear();
+                applicationArrayList.addAll(applications);
+                applicationAdapter.notifyDataSetChanged();
+                progressBar.setVisibility(View.GONE);
+            }
+        });
     }
 
-    public void retrieveApplicationList() {
+    public interface AppRetrivalInterface {
+        void onProgress();
+        void onComplete(List<Application> applications);
+    }
+    public static void retrieveApplicationList(Context context, final AppRetrivalInterface appRetrivalInterface) {
 
         Intent mainIntent = new Intent(Intent.ACTION_MAIN);
-        mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+        if (MainActivity.isRunningOnTv(context))
+            mainIntent.addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
+        else
+            mainIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        final PackageManager pm = getPackageManager();
+        final PackageManager pm = context.getPackageManager();
 
-        Observable.fromIterable(getPackageManager().queryIntentActivities(mainIntent, 0))
+        final ArrayList<Application> applicationArrayList = new ArrayList<>();
+
+        Observable.fromIterable(pm.queryIntentActivities(mainIntent, 0))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<ResolveInfo>() {
                     @Override
                     public void onSubscribe(Disposable d) {
-                        progressBar.setVisibility(View.VISIBLE);
+                        appRetrivalInterface.onProgress();
                     }
 
                     @Override
                     public void onNext(ResolveInfo resolveInfo) {
                         try {
                             Application a = new Application(
-                                    resolveInfo.loadLabel(getPackageManager()).toString(),
+                                    resolveInfo.loadLabel(pm).toString(),
                                     resolveInfo.activityInfo.packageName,
-                                    getPackageManager().getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
-                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(getPackageManager())))
+                                    pm.getPackageInfo(resolveInfo.activityInfo.packageName, 0).versionName,
+                                    ImageUtils.encodeBitmapToBase64(ImageUtils.drawableToBitmap(resolveInfo.loadIcon(pm)))
                             );
                             applicationArrayList.add(a);
                         } catch (PackageManager.NameNotFoundException nnfe) {
@@ -199,10 +224,9 @@ public class ProfileCreationActivity extends AppCompatActivity {
 
                     @Override
                     public void onComplete() {
-                        progressBar.setVisibility(View.GONE);
-                        applicationAdapter.notifyDataSetChanged();
-                        applicationListRecycler.setVisibility(View.VISIBLE);
+                        appRetrivalInterface.onComplete(applicationArrayList);
                     }
                 });
     }
+
 }

@@ -19,7 +19,7 @@ public abstract class ProfileDatabase extends RoomDatabase {
 
     public static ProfileDatabase getInstance(Context context) {
         if (instance != null) return instance;
-        instance = Room.databaseBuilder(context, ProfileDatabase.class, "profiles").build();
+        instance = Room.databaseBuilder(context, ProfileDatabase.class, "profiles").allowMainThreadQueries().build();
         return instance;
     }
 }
