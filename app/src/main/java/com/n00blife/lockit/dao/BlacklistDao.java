@@ -1,17 +1,11 @@
 package com.n00blife.lockit.dao;
 
-import com.n00blife.lockit.model.Blacklist;
-
-
-import java.util.List;
-
 import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
 
-import io.reactivex.Observable;
+import com.n00blife.lockit.model.Blacklist;
 
 @Dao
 public interface BlacklistDao {

@@ -1,6 +1,7 @@
 package com.n00blife.lockit.activities;
 
 import android.os.Bundle;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,7 +14,7 @@ public class PostLockdownActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_lockdown);
 
-        
+
     }
 
 }

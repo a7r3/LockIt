@@ -2,24 +2,22 @@ package com.n00blife.lockit.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import androidx.fragment.app.Fragment;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
@@ -34,11 +32,11 @@ import java.util.List;
 
 public class ProfileFragment extends Fragment {
 
+    private final String TAG = getClass().getSimpleName();
     ArrayList<Application> applications = new ArrayList<>();
     RecyclerView appList;
     ApplicationAdapter adapter;
     FloatingActionButton startSession;
-    private final String TAG = getClass().getSimpleName();
     private View view;
 
     @Nullable

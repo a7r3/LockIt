@@ -1,13 +1,14 @@
 package com.n00blife.lockit.adapter;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.model.Application;
@@ -61,7 +62,7 @@ public class ProfileAdapter extends RecyclerView.Adapter<ProfileAdapter.ViewHold
     }
 
     public interface OnItemClickedListener {
-        public void onItemClick(int position, Blacklist profile);
+        void onItemClick(int position, Blacklist profile);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {

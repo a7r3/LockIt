@@ -1,7 +1,5 @@
 package com.n00blife.lockit.services;
 
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 

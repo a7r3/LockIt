@@ -14,12 +14,12 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
-import androidx.annotation.Nullable;
-import androidx.core.app.NotificationCompat;
-
 import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
@@ -105,7 +105,7 @@ public class LockService extends Service {
                                     .getPackageList();
 
                             timerObservable = Observable
-                                    .interval(0,  1L, TimeUnit.SECONDS)
+                                    .interval(0, 1L, TimeUnit.SECONDS)
                                     .subscribeOn(Schedulers.io());
 
                             initTimerObserver();

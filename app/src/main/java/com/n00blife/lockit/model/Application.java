@@ -1,11 +1,5 @@
 package com.n00blife.lockit.model;
 
-import androidx.room.ColumnInfo;
-import androidx.room.Entity;
-import androidx.room.Ignore;
-import androidx.room.PrimaryKey;
-import androidx.annotation.NonNull;
-
 public class Application {
 
     private String applicationName;

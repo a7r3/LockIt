@@ -1,15 +1,15 @@
 package com.n00blife.lockit.tv;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -26,11 +26,11 @@ import java.util.List;
 
 public class TvMainActivity extends Activity {
 
+    private final String TAG = getClass().getSimpleName();
     ArrayList<Application> applications = new ArrayList<>();
     RecyclerView appList;
     ApplicationAdapter adapter;
     TextView selectAll, resetOptions, startSession;
-    private final String TAG = getClass().getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

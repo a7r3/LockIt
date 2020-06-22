@@ -1,13 +1,10 @@
 package com.n00blife.lockit.model;
 
-import com.n00blife.lockit.database.ArrayListTypeConverter;
-
-import java.util.ArrayList;
-
 import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverters;
+
+import java.util.ArrayList;
 
 @Entity(tableName = "apps")
 public class Blacklist {

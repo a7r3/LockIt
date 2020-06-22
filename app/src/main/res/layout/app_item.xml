@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/app_item_grid_background"
-    android:padding="8dp"
     android:layout_marginStart="8dp"
+    android:layout_marginTop="8dp"
     android:layout_marginEnd="8dp"
-    android:layout_marginTop="8dp">
+    android:background="@drawable/app_item_grid_background"
+    android:padding="8dp">
 
     <ImageView
         android:id="@+id/application_icon"
         android:layout_width="64dp"
         android:layout_height="64dp"
-        android:padding="8dp"
-        android:src="@mipmap/ic_launcher_round"
+        android:layout_centerVertical="true"
         android:layout_toEndOf="@id/checkbox"
-        android:layout_centerVertical="true"/>
+        android:padding="8dp"
+        android:src="@mipmap/ic_launcher_round" />
 
     <TextView
         android:id="@+id/application_name"
@@ -25,22 +25,22 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
+        android:layout_toEndOf="@id/application_icon"
         android:text="Application"
         android:textColor="#fff"
         android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_toEndOf="@id/application_icon" />
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/application_package_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@id/application_name"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
+        android:layout_toEndOf="@id/application_icon"
         android:text="com.android.application"
-        app:layout_constraintStart_toEndOf="@id/application_icon"
-        android:layout_below="@id/application_name"
-        android:layout_toEndOf="@id/application_icon"/>
+        app:layout_constraintStart_toEndOf="@id/application_icon" />
 
     <TextView
         android:id="@+id/application_version"
@@ -48,9 +48,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:text="v0.1"
-        android:visibility="gone"
         android:textSize="15sp"
-        android:textStyle="bold"/>
+        android:textStyle="bold"
+        android:visibility="gone" />
 
     <CheckBox
         android:id="@+id/checkbox"
@@ -58,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
-        tools:text=""
-        tools:hint=""/>
+        tools:hint=""
+        tools:text="" />
 
 </RelativeLayout>

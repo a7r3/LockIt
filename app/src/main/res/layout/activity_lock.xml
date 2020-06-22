@@ -7,12 +7,12 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/application_icon_group"
         android:alpha="0.3"
-        android:background="@drawable/tv_main_gradient"/>
+        android:background="@drawable/tv_main_gradient"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/application_icon_group" />
 
     <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:id="@+id/application_icon_group"

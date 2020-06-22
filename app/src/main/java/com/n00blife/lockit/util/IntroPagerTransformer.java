@@ -1,8 +1,9 @@
 package com.n00blife.lockit.util;
 
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.viewpager.widget.ViewPager;
-import android.view.View;
 
 import com.n00blife.lockit.R;
 

@@ -48,11 +48,6 @@ public class Utils {
         return uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION;
     }
 
-    public interface AppRetrivalInterface {
-        void onProgress();
-        void onComplete(List<Application> applications);
-    }
-
     public static void retrieveApplicationList(final Context context, final AppRetrivalInterface appRetrivalInterface) {
 
         Intent mainIntent = new Intent(Intent.ACTION_MAIN);
@@ -126,7 +121,7 @@ public class Utils {
         // This method would be either called by Remote Locker OR In-App UI
         // So, the user explicitly calls LockService
         BlacklistDatabase.getInstance(context).blacklistDao().setServiceActive(true);
-        startLockService(context,"");
+        startLockService(context, "");
     }
 
     public static void startLockService(Context context, String action) {
@@ -137,6 +132,12 @@ public class Utils {
         Intent lockServiceIntent = new Intent(context, LockService.class);
         lockServiceIntent.setAction(context.getPackageName() + action);
         ContextCompat.startForegroundService(context, lockServiceIntent);
+    }
+
+    public interface AppRetrivalInterface {
+        void onProgress();
+
+        void onComplete(List<Application> applications);
     }
 
 }

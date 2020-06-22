@@ -4,18 +4,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import androidx.annotation.Nullable;
-import com.google.android.material.tabs.TabLayout;
-
-import androidx.transition.TransitionManager;
-import androidx.viewpager.widget.ViewPager;
-import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.transition.TransitionManager;
+import androidx.viewpager.widget.ViewPager;
+
+import com.google.android.material.tabs.TabLayout;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.IntroAdapter;
 import com.n00blife.lockit.util.IntroPagerTransformer;
@@ -29,12 +29,12 @@ import io.reactivex.disposables.Disposable;
 
 public class IntroActivity extends AppCompatActivity {
 
+    private final String TAG = getClass().getSimpleName();
     private ViewPager viewPager;
     private Button getStartedButton;
     private ViewGroup parent;
     private String IS_INTRO_COMPLETE = "intro_complete";
     private int i = 0;
-    private final String TAG = getClass().getSimpleName();
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,7 +43,7 @@ public class IntroActivity extends AppCompatActivity {
 
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        if(preferences.getBoolean(IS_INTRO_COMPLETE, false)) {
+        if (preferences.getBoolean(IS_INTRO_COMPLETE, false)) {
             startActivity(new Intent(this.getApplicationContext(), MainActivity.class));
             finish();
         }

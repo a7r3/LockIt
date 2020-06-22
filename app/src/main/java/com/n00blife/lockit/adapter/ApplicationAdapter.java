@@ -1,8 +1,6 @@
 package com.n00blife.lockit.adapter;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,11 +8,13 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.util.ImageUtils;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,13 +70,14 @@ public class ApplicationAdapter extends RecyclerView.Adapter<ApplicationAdapter.
         return applicationArrayList.size();
     }
 
-    public interface onItemClicked {
-        public void onHolderClick(int position, Application application);
-    }
-
     public void getSelectedApps() {
 
     }
+
+    public interface onItemClicked {
+        void onHolderClick(int position, Application application);
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
 
         ImageView applicationIcon;

@@ -3,12 +3,6 @@ package com.n00blife.lockit.activities;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import com.google.android.material.textfield.TextInputLayout;
-import androidx.transition.TransitionManager;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +12,13 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.transition.TransitionManager;
+
+import com.google.android.material.textfield.TextInputLayout;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.adapter.ApplicationAdapter;
 import com.n00blife.lockit.database.BlacklistDatabase;
@@ -126,9 +127,9 @@ public class ProfileCreationActivity extends AppCompatActivity {
 //                if (status == -1) {
 //                    profileNameInput.setError("This profile already exists");
 //                } else {
-                    Toast.makeText(ProfileCreationActivity.this.getApplicationContext(),
-                            "Profile '" + profileName + "' created", Toast.LENGTH_LONG).show();
-                    finish();
+                Toast.makeText(ProfileCreationActivity.this.getApplicationContext(),
+                        "Profile '" + profileName + "' created", Toast.LENGTH_LONG).show();
+                finish();
 //                }
             }
         });
@@ -136,7 +137,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(whitelistedApplicationList.size() == 0) return;
+                if (whitelistedApplicationList.size() == 0) return;
 
                 whitelistedApplicationList.clear();
                 // FIXME This is bad ;-;

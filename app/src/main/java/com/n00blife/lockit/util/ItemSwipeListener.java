@@ -6,13 +6,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
-import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import androidx.core.content.ContextCompat;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.ItemTouchHelper;
 import android.view.View;
+
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.ItemTouchHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.n00blife.lockit.R;
 
@@ -73,7 +73,7 @@ public class ItemSwipeListener extends ItemTouchHelper.SimpleCallback {
         int deleteIconLeft = itemView.getLeft() + deleteIconMargin;
         int deleteIconRight = itemView.getLeft() + deleteIconMargin + someDrawable.getIntrinsicWidth();
 
-        if(dX < 0) {
+        if (dX < 0) {
             someDrawable = deleteDrawable;
             colorDrawable.setColor(Color.parseColor("#F44336"));
             deleteIconLeft = itemView.getRight() - deleteIconMargin - someDrawable.getIntrinsicWidth();
