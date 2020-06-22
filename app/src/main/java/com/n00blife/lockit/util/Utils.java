@@ -124,8 +124,20 @@ public class Utils {
     }
 
     public static void startLockService(Context context) {
+        // This method would be either called by Remote Locker OR In-App UI
+        // So, the user explicitly calls LockService
+        BlacklistDatabase.getInstance(context).profileDao().setServiceActive(true);
+        startLockService(context,"");
+    }
+
+    public static void startLockService(Context context, String action) {
+        // This method is ONLY to be called by BOOT_COMPLETED broadcast receiver
+        // Service is not to be set as active here since it's not explicit
+        // Though, we'll check if the service was running on last boot, and restart it again
+        //   if that was the case
         Intent lockServiceIntent = new Intent(context, LockService.class);
-        lockServiceIntent.setAction(context.getPackageName());
+        lockServiceIntent.setAction(context.getPackageName() + action);
         ContextCompat.startForegroundService(context, lockServiceIntent);
     }
+
 }

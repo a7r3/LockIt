@@ -70,7 +70,7 @@ public class TvMainActivity extends Activity {
                 }
 
                 BlacklistDatabase.getInstance(TvMainActivity.this).profileDao().createBlacklist(new Blacklist(pkgList));
-                Toast.makeText(TvMainActivity.this, "Device Locked", Toast.LENGTH_LONG).show();
+//                Toast.makeText(TvMainActivity.this, "Device Locked", Toast.LENGTH_LONG).show();
                 Utils.startLockService(TvMainActivity.this);
                 finish();
             }

@@ -9,6 +9,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import io.reactivex.Observable;
 
@@ -20,5 +21,11 @@ public interface BlacklistDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void createBlacklist(Blacklist blacklist);
+
+    @Query("SELECT isActive FROM apps WHERE profileName = 'default'")
+    boolean isServiceActiveOnLastBoot();
+
+    @Query("UPDATE apps SET isActive = :isServiceRunningNow WHERE profileName = 'default'")
+    void setServiceActive(boolean isServiceRunningNow);
 
 }

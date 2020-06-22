@@ -16,7 +16,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+
+import android.os.Looper;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
@@ -50,6 +53,15 @@ public class LockService extends Service {
     private Observer<Long> timerObserver;
     private Disposable disposable;
 
+    private void showToast(final String text) {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(LockService.this, text, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
@@ -59,6 +71,20 @@ public class LockService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
+
+            if (intent.getAction().equalsIgnoreCase(getPackageName() + "BOOT_COMPLETED")) {
+                Log.d(TAG, "onStartCommand: called on BOOT_COMPLETED broadcast");
+                Log.d(TAG, "onStartCommand: Checking if service was running on last boot");
+                boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).profileDao().isServiceActiveOnLastBoot();
+                if (!hasToBeRestarted) {
+                    Log.d(TAG, "onStartCommand: Service was not running on last boot");
+                    Log.d(TAG, "onStartCommand: Aborting self");
+                    LockService.this.onDestroy();
+                    return START_NOT_STICKY;
+                }
+            }
+
+            showToast("Device is Locked");
 
             Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                     .subscribeOn(Schedulers.io())
@@ -208,6 +234,7 @@ public class LockService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        showToast("Device is Unlocked");
         disposable.dispose();
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
