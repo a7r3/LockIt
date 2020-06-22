@@ -119,7 +119,7 @@ public class ProfileCreationActivity extends AppCompatActivity {
                 Executors.newSingleThreadExecutor().execute(new Runnable() {
                     @Override
                     public void run() {
-                        BlacklistDatabase.getInstance(ProfileCreationActivity.this).profileDao().createBlacklist(new Blacklist(pkgList));
+                        BlacklistDatabase.getInstance(ProfileCreationActivity.this).blacklistDao().createBlacklist(new Blacklist(pkgList));
                     }
                 });
 

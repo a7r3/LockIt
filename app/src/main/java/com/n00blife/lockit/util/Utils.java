@@ -15,7 +15,6 @@ import com.n00blife.lockit.database.BlacklistDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Blacklist;
 import com.n00blife.lockit.services.LockService;
-import com.n00blife.lockit.tv.TvMainActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -105,7 +104,7 @@ public class Utils {
 
     public static List<Application> applyBlacklistData(Context context, List<Application> applications) {
         Blacklist blacklist = BlacklistDatabase.getInstance(context)
-                .profileDao()
+                .blacklistDao()
                 .getBlacklist();
 
         if (blacklist == null)
@@ -126,7 +125,7 @@ public class Utils {
     public static void startLockService(Context context) {
         // This method would be either called by Remote Locker OR In-App UI
         // So, the user explicitly calls LockService
-        BlacklistDatabase.getInstance(context).profileDao().setServiceActive(true);
+        BlacklistDatabase.getInstance(context).blacklistDao().setServiceActive(true);
         startLockService(context,"");
     }
 

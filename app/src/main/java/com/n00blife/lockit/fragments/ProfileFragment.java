@@ -74,7 +74,7 @@ public class ProfileFragment extends Fragment {
                     pkgList.add(a.getApplicationPackageName());
                 }
 
-                BlacklistDatabase.getInstance(getActivity()).profileDao().createBlacklist(new Blacklist(pkgList));
+                BlacklistDatabase.getInstance(getActivity()).blacklistDao().createBlacklist(new Blacklist(pkgList));
                 Toast.makeText(getContext(), "Start!", Toast.LENGTH_LONG).show();
                 Intent lockServiceIntent = new Intent(getContext(), LockService.class);
                 lockServiceIntent.setAction("lockit_tv");

@@ -15,7 +15,7 @@ import androidx.room.TypeConverters;
 public abstract class BlacklistDatabase extends RoomDatabase {
     private static BlacklistDatabase instance;
 
-    public abstract BlacklistDao profileDao();
+    public abstract BlacklistDao blacklistDao();
 
     public static BlacklistDatabase getInstance(Context context) {
         if (instance != null) return instance;

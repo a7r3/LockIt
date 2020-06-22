@@ -1,16 +1,13 @@
 package com.n00blife.lockit.tv;
 
 import androidx.annotation.NonNull;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,7 +19,6 @@ import com.n00blife.lockit.adapter.ApplicationAdapter;
 import com.n00blife.lockit.database.BlacklistDatabase;
 import com.n00blife.lockit.model.Application;
 import com.n00blife.lockit.model.Blacklist;
-import com.n00blife.lockit.services.LockService;
 import com.n00blife.lockit.util.Utils;
 
 import java.util.ArrayList;
@@ -69,7 +65,7 @@ public class TvMainActivity extends Activity {
                     pkgList.add(a.getApplicationPackageName());
                 }
 
-                BlacklistDatabase.getInstance(TvMainActivity.this).profileDao().createBlacklist(new Blacklist(pkgList));
+                BlacklistDatabase.getInstance(TvMainActivity.this).blacklistDao().createBlacklist(new Blacklist(pkgList));
 //                Toast.makeText(TvMainActivity.this, "Device Locked", Toast.LENGTH_LONG).show();
                 Utils.startLockService(TvMainActivity.this);
                 finish();

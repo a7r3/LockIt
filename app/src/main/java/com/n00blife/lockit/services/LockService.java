@@ -75,7 +75,7 @@ public class LockService extends Service {
             if (intent.getAction().equalsIgnoreCase(getPackageName() + "BOOT_COMPLETED")) {
                 Log.d(TAG, "onStartCommand: called on BOOT_COMPLETED broadcast");
                 Log.d(TAG, "onStartCommand: Checking if service was running on last boot");
-                boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).profileDao().isServiceActiveOnLastBoot();
+                boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).blacklistDao().isServiceActiveOnLastBoot();
                 if (!hasToBeRestarted) {
                     Log.d(TAG, "onStartCommand: Service was not running on last boot");
                     Log.d(TAG, "onStartCommand: Aborting self");
@@ -100,7 +100,7 @@ public class LockService extends Service {
                         public void run() throws Exception {
                             blackList = BlacklistDatabase
                                     .getInstance(LockService.this)
-                                    .profileDao()
+                                    .blacklistDao()
                                     .getBlacklist()
                                     .getPackageList();
 
@@ -235,6 +235,7 @@ public class LockService extends Service {
     public void onDestroy() {
         super.onDestroy();
         showToast("Device is Unlocked");
+        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
         disposable.dispose();
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
