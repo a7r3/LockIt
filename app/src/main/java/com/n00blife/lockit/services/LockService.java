@@ -26,6 +26,7 @@ import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.activities.PostLockdownActivity;
 import com.n00blife.lockit.database.BlacklistDatabase;
 import com.n00blife.lockit.util.Constants;
+import com.n00blife.lockit.util.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +86,8 @@ public class LockService extends Service {
             }
 
             showToast("Device is Locked");
+
+            Utils.exitToLauncher(this);
 
             Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                     .subscribeOn(Schedulers.io())

@@ -16,6 +16,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.util.Constants;
+import com.n00blife.lockit.util.Utils;
 
 public class LockActivity extends AppCompatActivity {
 
@@ -28,10 +29,7 @@ public class LockActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        Intent exitToLauncher = new Intent(Intent.ACTION_MAIN);
-        exitToLauncher.addCategory(Intent.CATEGORY_HOME);
-        exitToLauncher.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(exitToLauncher);
+        Utils.exitToLauncher(this);
     }
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
