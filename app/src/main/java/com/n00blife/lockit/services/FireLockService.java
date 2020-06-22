@@ -17,12 +17,14 @@ public class FireLockService extends FirebaseMessagingService {
         String unlock = remoteMessage.getData().get("unlock");
         String lock = remoteMessage.getData().get("lock");
         Log.d(TAG, "onMessageReceived: Called");
-        if (unlock != null && unlock.equals("true")) {
-            Log.d(TAG, "onMessageReceived: Unlocked: Stopping LockService");
-            stopService(new Intent(FireLockService.this, LockService.class));
-        } else if (lock != null && lock.equals("true")) {
-            Log.d(TAG, "onMessageReceived: Locking Device: Calling LockService");
-            Utils.startLockService(FireLockService.this);
+        if (unlock != null) {
+            if (unlock.equals("true")) {
+                Log.d(TAG, "onMessageReceived: Unlocked: Stopping LockService");
+                stopService(new Intent(FireLockService.this, LockService.class));
+            } else if (unlock.equals("false")) {
+                Log.d(TAG, "onMessageReceived: Locking Device: Calling LockService");
+                Utils.startLockService(FireLockService.this);
+            }
         }
     }
 }
