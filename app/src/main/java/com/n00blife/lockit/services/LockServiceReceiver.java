@@ -7,6 +7,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
 
+import com.n00blife.lockit.util.Constants;
 import com.n00blife.lockit.util.Utils;
 
 public class LockServiceReceiver extends BroadcastReceiver {
@@ -22,6 +23,6 @@ public class LockServiceReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (intent.getAction() != null && intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED))
-            Utils.startLockService(context, "BOOT_COMPLETED");
+            Utils.startLockService(context, Constants.ACTION_RESTART_LOCKSERVICE);
     }
 }

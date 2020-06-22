@@ -1,6 +1,9 @@
 package com.n00blife.lockit.activities;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.os.Bundle;
 import android.view.View;
@@ -9,8 +12,10 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.n00blife.lockit.R;
+import com.n00blife.lockit.util.Constants;
 
 public class LockActivity extends AppCompatActivity {
 
@@ -29,10 +34,30 @@ public class LockActivity extends AppCompatActivity {
         startActivity(exitToLauncher);
     }
 
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            finish();
+        }
+    };
+
+    @Override
+    protected void onDestroy() {
+        unregisterReceiver(receiver);
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_lock);
+
+        registerReceiver(receiver, new IntentFilter(Constants.ACTION_STOP_LOCKACTIVITY));
 
         overridePendingTransition(0, 0);
 
