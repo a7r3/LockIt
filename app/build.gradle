@@ -18,6 +18,10 @@ android {
     }
     productFlavors {
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -34,6 +38,8 @@ dependencies {
     implementation 'androidx.leanback:leanback:1.0.0'
     implementation 'com.github.bumptech.glide:glide:3.8.0'
     implementation 'com.google.firebase:firebase-messaging:20.2.1'
+    implementation 'androidx.preference:preference:1.1.1'
+    implementation 'com.google.android.gms:play-services-nearby:17.0.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test:runner:1.1.1-beta01'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1-beta01'

@@ -8,6 +8,7 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.Binder;
@@ -15,12 +16,24 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.preference.Preference;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.preference.PreferenceManager;
 
+import com.google.android.gms.nearby.Nearby;
+import com.google.android.gms.nearby.connection.AdvertisingOptions;
+import com.google.android.gms.nearby.connection.ConnectionInfo;
+import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
+import com.google.android.gms.nearby.connection.ConnectionResolution;
+import com.google.android.gms.nearby.connection.Payload;
+import com.google.android.gms.nearby.connection.PayloadCallback;
+import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
+import com.google.android.gms.nearby.connection.Strategy;
 import com.n00blife.lockit.R;
 import com.n00blife.lockit.activities.LockActivity;
 import com.n00blife.lockit.activities.PostLockdownActivity;
@@ -53,6 +66,8 @@ public class LockService extends Service {
     private Observable<Long> timerObservable;
     private Observer<Long> timerObserver;
     private Disposable disposable;
+    private SharedPreferences sharedPreferences;
+    private String connectedEndpoint;
 
     private void showToast(final String text) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
@@ -85,42 +100,111 @@ public class LockService extends Service {
                 }
             }
 
-            showToast("Device is Locked");
+            Log.d(TAG, "onStartCommand: Starting Lock Service");
+            startLockOps();
+        }
 
-            Utils.exitToLauncher(this);
+        return START_NOT_STICKY;
+    }
 
-            Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(Schedulers.io())
-                    .doOnNext(new Consumer<ApplicationInfo>() {
-                        @Override
-                        public void accept(ApplicationInfo applicationInfo) {
-                            allApplicationPackages.add(applicationInfo.packageName);
-                        }
-                    })
-                    .doOnComplete(new Action() {
-                        @Override
-                        public void run() throws Exception {
-                            blackList = BlacklistDatabase
-                                    .getInstance(LockService.this)
-                                    .blacklistDao()
-                                    .getBlacklist()
-                                    .getPackageList();
+    private PayloadCallback payloadCallback = new PayloadCallback() {
+        @Override
+        public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
+            String action = new String(payload.asBytes());
+            Log.d(TAG, "onPayloadReceived: Received " + action);
+            switch (action) {
+                case "unlock":
+                    stopLock();
+                    break;
+                case "lock":
+                    startLock();
+                    break;
+            }
+            Nearby.getConnectionsClient(LockService.this)
+                    .disconnectFromEndpoint(connectedEndpoint);
+            startAdvertising();
+        }
 
-                            timerObservable = Observable
-                                    .interval(0, 1L, TimeUnit.SECONDS)
-                                    .subscribeOn(Schedulers.io());
-
-                            initTimerObserver();
-
-                            timerObservable.subscribe(timerObserver);
-
-                        }
-                    })
-                    .subscribe();
+        @Override
+        public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
 
         }
-        return super.onStartCommand(intent, flags, startId);
+    };
+
+    private ConnectionLifecycleCallback connectionLifecycleCallback = new ConnectionLifecycleCallback() {
+        @Override
+        public void onConnectionInitiated(@NonNull String s, @NonNull ConnectionInfo connectionInfo) {
+            Nearby.getConnectionsClient(LockService.this)
+                    .acceptConnection(s, payloadCallback);
+            connectedEndpoint = s;
+        }
+
+        @Override
+        public void onConnectionResult(@NonNull String s, @NonNull ConnectionResolution connectionResolution) {
+
+        }
+
+        @Override
+        public void onDisconnected(@NonNull String s) {
+            Log.d(TAG, "onDisconnected: Yeah");
+        }
+    };
+
+    private void startAdvertising() {
+        String dedicatedServiceId = sharedPreferences.getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, "");
+        Log.d(TAG, "startAdvertising: " + dedicatedServiceId);
+        AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder().setStrategy(Strategy.P2P_STAR).build();
+        Nearby.getConnectionsClient(this)
+            .startAdvertising(
+                "remotelocker", dedicatedServiceId,
+                connectionLifecycleCallback,
+                advertisingOptions)
+            .addOnSuccessListener(aVoid -> Log.d(TAG, "onSuccess: ADVERTISING NOW @ " + dedicatedServiceId))
+            .addOnFailureListener(e -> {
+                e.printStackTrace();
+                Log.d(TAG, "onFailure: ADVERTISING FAILURE");
+            });
+    }
+
+    private void startLockOps() {
+        showToast("Device is Locked");
+
+        Log.d(TAG, "startLockOps: Started Lock Service");
+
+        startAdvertising();
+
+        Utils.exitToLauncher(this);
+
+        Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .doOnNext(new Consumer<ApplicationInfo>() {
+                    @Override
+                    public void accept(ApplicationInfo applicationInfo) {
+                        allApplicationPackages.add(applicationInfo.packageName);
+                    }
+                })
+                .doOnComplete(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        blackList = BlacklistDatabase
+                                .getInstance(LockService.this)
+                                .blacklistDao()
+                                .getBlacklist()
+                                .getPackageList();
+
+                        timerObservable = Observable
+                                .interval(0, 1L, TimeUnit.SECONDS)
+                                .subscribeOn(Schedulers.io());
+
+                        initTimerObserver();
+
+                        timerObservable.subscribe(timerObserver);
+
+                    }
+                })
+                .subscribe();
+
     }
 
     public void initTimerObserver() {
@@ -206,6 +290,7 @@ public class LockService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         publishForegroundServiceNotification();
     }
 
@@ -238,13 +323,21 @@ public class LockService extends Service {
         startForeground(notificationId, notification.build());
     }
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
+    private void stopLock() {
         showToast("Device is Unlocked");
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
         sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
         disposable.dispose();
+    }
+
+    private void startLock() {
+        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
+        startLockOps();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
         stopSelf();

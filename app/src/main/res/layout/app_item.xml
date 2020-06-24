@@ -38,6 +38,7 @@
         android:layout_below="@id/application_name"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
+        android:visibility="gone"
         android:layout_toEndOf="@id/application_icon"
         android:text="com.android.application"
         app:layout_constraintStart_toEndOf="@id/application_icon" />

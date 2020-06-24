@@ -42,6 +42,22 @@
     </LinearLayout>
 
     <TextView
+        android:id="@+id/connection_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:background="@drawable/normal_button_state"
+        app:layout_constraintEnd_toStartOf="@id/select_all"
+        app:layout_constraintTop_toTopOf="@id/title"
+        app:layout_constraintBottom_toBottomOf="@id/title"
+        android:text="Connect"
+        android:nextFocusDown="@id/apps_list"
+        android:nextFocusRight="@id/select_all"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+    <TextView
         android:id="@+id/select_all"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -49,7 +65,7 @@
         android:background="@drawable/normal_button_state"
         android:gravity="center"
         android:nextFocusLeft="@id/apps_list"
-        android:nextFocusRight="@id/reset"
+        android:nextFocusRight="@id/start_session"
         android:nextFocusDown="@id/apps_list"
         android:padding="16dp"
         android:text="Select All"
@@ -63,6 +79,7 @@
 
     <TextView
         android:id="@+id/reset"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
