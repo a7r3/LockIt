@@ -36,8 +36,12 @@ Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in
 ## Working
 
 Android TV (Locked Device) + Phone (Key):
-0. (Fresh Start) TV and Phone must connect with each other for the first time, with User side authorization in the UI
-0.1 Connections hereon will be made directly with implicit auth (TV and Phone connect with the auth code known only to these devices)
+
+Fresh Start:
+1. (Fresh Start) TV and Phone must connect with each other for the first time, with User side authorization in the UI
+2. Connections hereon will be made directly with implicit auth (TV and Phone connect with the auth code known only to these devices)
+
+After Fresh Start:
 1. Lock can either be started manually in the TV App OR can be done directly from the phone
 2. Restricted set of apps will be accessible to the child
 3. Parent can unlock the TV device from their phone, with Biometric ID before every Lock/Unlock transaction
