@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
     compileSdkVersion 28
     defaultConfig {
-        applicationId "com.n00blife.lockit"
+        applicationId "nooblife.lockit"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
@@ -37,7 +37,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata:2.0.0'
     implementation 'androidx.leanback:leanback:1.0.0'
     implementation 'com.github.bumptech.glide:glide:3.8.0'
-    implementation 'com.google.firebase:firebase-messaging:20.2.1'
     implementation 'androidx.preference:preference:1.1.1'
     implementation 'com.google.android.gms:play-services-nearby:17.0.0'
     testImplementation 'junit:junit:4.12'
@@ -45,4 +44,3 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1-beta01'
     annotationProcessor 'androidx.room:room-compiler:2.1.0-alpha03'
 }
-apply plugin: 'com.google.gms.google-services'
