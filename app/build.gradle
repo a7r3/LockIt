@@ -43,4 +43,6 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.1.1-beta01'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.1-beta01'
     annotationProcessor 'androidx.room:room-compiler:2.1.0-alpha03'
+    implementation 'com.github.andriydruk:rx2dnssd:0.9.13'
+
 }

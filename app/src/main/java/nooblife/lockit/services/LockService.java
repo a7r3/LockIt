@@ -11,6 +11,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.net.nsd.NsdManager;
+import android.net.nsd.NsdServiceInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -24,6 +26,10 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
+import com.github.druk.rx2dnssd.BonjourService;
+import com.github.druk.rx2dnssd.Rx2Dnssd;
+import com.github.druk.rx2dnssd.Rx2DnssdBindable;
+import com.github.druk.rx2dnssd.Rx2DnssdEmbedded;
 import com.google.android.gms.nearby.Nearby;
 import com.google.android.gms.nearby.connection.AdvertisingOptions;
 import com.google.android.gms.nearby.connection.ConnectionInfo;
@@ -34,10 +40,17 @@ import com.google.android.gms.nearby.connection.PayloadCallback;
 import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
 import com.google.android.gms.nearby.connection.Strategy;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -106,63 +119,77 @@ public class LockService extends Service {
         return START_NOT_STICKY;
     }
 
-    private PayloadCallback payloadCallback = new PayloadCallback() {
+    private NsdManager.RegistrationListener listener = new NsdManager.RegistrationListener() {
         @Override
-        public void onPayloadReceived(@NonNull String s, @NonNull Payload payload) {
-            String action = new String(payload.asBytes());
-            Log.d(TAG, "onPayloadReceived: Received " + action);
-            switch (action) {
-                case "unlock":
-                    stopLock();
-                    break;
-                case "lock":
-                    startLock();
-                    break;
-            }
-            Nearby.getConnectionsClient(LockService.this)
-                    .disconnectFromEndpoint(connectedEndpoint);
-            startAdvertising();
+        public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
+            Log.d(TAG, "onRegistrationFailed: " + errorCode);
         }
 
         @Override
-        public void onPayloadTransferUpdate(@NonNull String s, @NonNull PayloadTransferUpdate payloadTransferUpdate) {
+        public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
+            Log.d(TAG, "onUnregistrationFailed: " + errorCode);
+        }
 
+        @Override
+        public void onServiceRegistered(NsdServiceInfo serviceInfo) {
+            Log.d(TAG, "onServiceRegistered: " +  serviceInfo.getServiceType() + " " + serviceInfo.getPort());
+        }
+
+        @Override
+        public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
+            Log.d(TAG, "onServiceUnregistered: " + serviceInfo.getServiceName());
         }
     };
 
-    private ConnectionLifecycleCallback connectionLifecycleCallback = new ConnectionLifecycleCallback() {
-        @Override
-        public void onConnectionInitiated(@NonNull String s, @NonNull ConnectionInfo connectionInfo) {
-            Nearby.getConnectionsClient(LockService.this)
-                    .acceptConnection(s, payloadCallback);
-            connectedEndpoint = s;
-        }
+    private int serverPort = -1;
 
-        @Override
-        public void onConnectionResult(@NonNull String s, @NonNull ConnectionResolution connectionResolution) {
+    private void initializeServer() {
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                ServerSocket serverSocket = new ServerSocket(0, 1, InetAddress.getByName("0.0.0.0"));
+                serverPort = serverSocket.getLocalPort();
+                Log.d(TAG, "initializeServer: server started @ " + serverSocket.getInetAddress() + " " + serverSocket.getLocalPort());
+                startNsdService();
 
-        }
+                while (true) {
+                    Socket socket = serverSocket.accept();
+                    BufferedReader reader = new BufferedReader(
+                            new InputStreamReader(socket.getInputStream())
+                    );
 
-        @Override
-        public void onDisconnected(@NonNull String s) {
-            Log.d(TAG, "onDisconnected: Yeah");
-        }
-    };
+                    Log.d(TAG, "run: Client Connected " + socket.getInetAddress().getHostAddress());
 
-    private void startAdvertising() {
-        String dedicatedServiceId = sharedPreferences.getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, "");
-        Log.d(TAG, "startAdvertising: " + dedicatedServiceId);
-        AdvertisingOptions advertisingOptions = new AdvertisingOptions.Builder().setStrategy(Strategy.P2P_STAR).build();
-        Nearby.getConnectionsClient(this)
-            .startAdvertising(
-                "remotelocker", dedicatedServiceId,
-                connectionLifecycleCallback,
-                advertisingOptions)
-            .addOnSuccessListener(aVoid -> Log.d(TAG, "onSuccess: ADVERTISING NOW @ " + dedicatedServiceId))
-            .addOnFailureListener(e -> {
+                    reader.close();
+                    socket.close();
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
-                Log.d(TAG, "onFailure: ADVERTISING FAILURE");
-            });
+            }
+        });
+    }
+
+    private void startNsdService() {
+        Rx2Dnssd rx2Dnssd = new Rx2DnssdBindable(this);
+        BonjourService bs = new BonjourService.Builder(0, 0, Constants.LOCKIT_DISCOVERY_SERVICE_ID, Constants.LOCKIT_SERVICE_TYPE, null).port(serverPort).build();
+        Disposable registerDisposable = rx2Dnssd.register(bs)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Consumer<BonjourService>() {
+                    @Override
+                    public void accept(BonjourService bonjourService) throws Exception {
+                        Log.d(TAG, "accept: registered @ " + bonjourService.getRegType());
+                    }
+                }, new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        throwable.printStackTrace();
+                    }
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+
+                    }
+                });
     }
 
     private void startLockOps() {
@@ -170,7 +197,7 @@ public class LockService extends Service {
 
         Log.d(TAG, "startLockOps: Started Lock Service");
 
-        startAdvertising();
+        initializeServer();
 
         Utils.exitToLauncher(this);
 

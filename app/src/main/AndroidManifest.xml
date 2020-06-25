@@ -21,6 +21,7 @@
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -57,12 +58,7 @@
         <service
             android:name=".services.LockService"
             android:process=":lockService" />
-        <service android:name=".services.FireLockService"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="com.google.firebase.MESSAGING_EVENT" />
-            </intent-filter>
-        </service>
+
         <receiver
             android:name=".services.LockServiceReceiver"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">

@@ -1,8 +1,10 @@
 package nooblife.lockit.tv;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -54,6 +56,7 @@ public class TvMainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tv_main);
         appList = findViewById(R.id.apps_list);
+
         GridLayoutManager layoutManager = new GridLayoutManager(this, 4, RecyclerView.VERTICAL, false);
         appList.setLayoutManager(layoutManager);
         adapter = new ApplicationAdapter(this, applications, R.layout.app_item);
@@ -71,11 +74,11 @@ public class TvMainActivity extends Activity {
                 Toast.makeText(TvMainActivity.this, "Select at least one application", Toast.LENGTH_LONG).show();
                 return;
             }
-
-            if (authenticationCode.isEmpty()) {
-                Toast.makeText(TvMainActivity.this, "Set up a remote locker", Toast.LENGTH_LONG).show();
-                return;
-            }
+//
+//            if (authenticationCode.isEmpty()) {
+//                Toast.makeText(TvMainActivity.this, "Set up a remote locker", Toast.LENGTH_LONG).show();
+//                return;
+//            }
 
             final ArrayList<String> pkgList = new ArrayList<>();
 
