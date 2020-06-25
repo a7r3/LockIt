@@ -119,28 +119,6 @@ public class LockService extends Service {
         return START_NOT_STICKY;
     }
 
-    private NsdManager.RegistrationListener listener = new NsdManager.RegistrationListener() {
-        @Override
-        public void onRegistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-            Log.d(TAG, "onRegistrationFailed: " + errorCode);
-        }
-
-        @Override
-        public void onUnregistrationFailed(NsdServiceInfo serviceInfo, int errorCode) {
-            Log.d(TAG, "onUnregistrationFailed: " + errorCode);
-        }
-
-        @Override
-        public void onServiceRegistered(NsdServiceInfo serviceInfo) {
-            Log.d(TAG, "onServiceRegistered: " +  serviceInfo.getServiceType() + " " + serviceInfo.getPort());
-        }
-
-        @Override
-        public void onServiceUnregistered(NsdServiceInfo serviceInfo) {
-            Log.d(TAG, "onServiceUnregistered: " + serviceInfo.getServiceName());
-        }
-    };
-
     private int serverPort = -1;
 
     private void initializeServer() {
