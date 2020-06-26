@@ -2,7 +2,11 @@
 
 Digital Well-being for Android TVs, managed!
 
-<img src="https://user-images.githubusercontent.com/14874906/85896027-5948f900-b815-11ea-9b63-e5e01a189d3b.png" width="500px">
+<img src="https://user-images.githubusercontent.com/14874906/85896027-5948f900-b815-11ea-9b63-e5e01a189d3b.png" width="800px">
+Left: WiLock Remote Control App
+Right: LockIt (this app)
+
+Note: The app cannot be run in emulators, since service discovery is not supported
 
 [Phone Remote Locker app (WiLock) is available here](https://github.com/a7r3/WiLock)
 
