@@ -2,6 +2,8 @@
 
 Digital Well-being for Android TVs, managed!
 
+<img src="https://user-images.githubusercontent.com/14874906/85896027-5948f900-b815-11ea-9b63-e5e01a189d3b.png" width="500px">
+
 [Phone Remote Locker app (WiLock) is available here](https://github.com/a7r3/WiLock)
 
 Android-TV + Phone: Application which locks down selected apps for a child, which can only be unlocked from a Parent's device.
@@ -26,6 +28,8 @@ Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in
 
 * Issue when the remote locker device is lost OR the the remote locker app is uninstalled
   - How to get back in the system? Something to think on
+
+* [FEATURE] TV App listing in the remote control phone itself. It would remove need of a frontend for TV, we can just package the server, and a minimal UI to provide info and get things started.
 
 * Manage Disconnection Failures
 
