@@ -37,6 +37,7 @@ NsdManager's interaction with mdns android daemon works very well (Device Logs a
 
 Interaction with mdnsd works, App's informed about it, Discovery and Connection takes a few ms! Safe to say we've reached the peak.
 
+* Authentication
 * Manage Permissions
 * Manage Disconnection Failures
 * Manage Retry Attempts
@@ -48,9 +49,10 @@ Interaction with mdnsd works, App's informed about it, Discovery and Connection 
 
 Android TV (Locked Device) + Phone (Key):
 
-Fresh Start:
-1. (Fresh Start) TV and Phone must connect with each other for the first time, with User side authorization in the UI
-2. Connections hereon will be made directly with implicit auth (TV and Phone connect with the auth code known only to these devices)
+Auth is a TODO now
+~Fresh Start:~
+~1. (Fresh Start) TV and Phone must connect with each other for the first time, with User side authorization in the UI~
+~2. Connections hereon will be made directly with implicit auth (TV and Phone connect with the auth code known only to these devices)~
 
 After Fresh Start:
 1. Lock can either be started manually in the TV App OR can be done directly from the phone
