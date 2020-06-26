@@ -25,14 +25,25 @@ Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in
 * ~Big TODO: Use Bluetooth/WiFi P2P based communication. Can eliminate the "overkill" requirement of a hosted function.~
   ~- Suggestions are welcome for this. The issue is that neither of this communication methods can be kicked off in the background, easily.~
 
-**Moved to Google Nearby Connections API**
+* ~Moved to Google Nearby Connections API~
+
+Pairing takes considerable time (5 seconds), is juice consuming, and is unreliable (connectivity time changes randomly)
+
+* ~Moved to Android NsdManager (for discovery of service) + TCP Sockets (for Server)~
+
+NsdManager's interaction with mdns android daemon works very well (Device Logs and Wireshark Capture Logs say so). But the app isn't informed about any such events at all.
+
+* **Moved to [Rx2DNSSD](https://github.com/andriydruk/RxDNSSD) + TCP Sockets (Server)**
+
+Interaction with mdnsd works, App's informed about it, Discovery and Connection takes a few ms! Safe to say we've reached the peak.
 
 * Manage Permissions
 * Manage Disconnection Failures
 * Manage Retry Attempts
-* Prevent Multiple instances of LockActivity to open up (this was an issue with FCM, when a burst of messages were sent to the device)
-* See if LockService advertising forever can be tackled
-  
+* ~Prevent Multiple instances of LockActivity to open up (this was an issue with FCM, when a burst of messages were sent to the device)~
+* ~See if LockService advertising forever can be tackled~ Current implementation works only when device is awake. Still, can look out for some more reduction.
+  Well, a TV is always awake :shrug:...
+
 ## Working
 
 Android TV (Locked Device) + Phone (Key):
