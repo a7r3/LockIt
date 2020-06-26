@@ -101,7 +101,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:backgroundTint="#4CAF50"
+        android:backgroundTint="@color/colorAccent"
         android:focusedByDefault="true"
         android:text="Let It Sleep"
         android:textAllCaps="true"
