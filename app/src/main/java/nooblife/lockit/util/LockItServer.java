@@ -120,7 +120,7 @@ public class LockItServer {
         BonjourService bs = new BonjourService.Builder(
                 0,
                 0,
-                Build.DEVICE,
+                Build.MODEL,
                 getServiceId(),
                 null
         ).port(serverPort).build();
