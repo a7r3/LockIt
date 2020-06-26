@@ -29,6 +29,7 @@ import com.github.druk.rx2dnssd.Rx2DnssdBindable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -64,6 +65,12 @@ public class LockService extends Service {
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
 
+    enum LockState {
+        LOCKED, UNLOCKED
+    }
+
+    private LockState currentLockState;
+
     private void showToast(final String text) {
         new Handler(Looper.getMainLooper()).post(() ->
                 Toast.makeText(LockService.this, text, Toast.LENGTH_LONG).show()
@@ -92,7 +99,7 @@ public class LockService extends Service {
             }
 
             Log.d(TAG, "onStartCommand: Starting Lock Service");
-            startLockOps();
+            startLock();
         }
 
         return START_NOT_STICKY;
@@ -111,20 +118,24 @@ public class LockService extends Service {
                 while (true) {
                     Socket socket = serverSocket.accept();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
                     Log.d(TAG, "run: Client Connected " + socket.getInetAddress().getHostAddress());
 
                     String action = reader.readLine();
                     Log.d(TAG, "initializeServer: Client says: " + action);
-                    switch(action) {
-                        case "lock":
-                            stopLock();
-                            break;
-                        case "unlock":
-                            startLock();
-                            break;
+                    if (action.equals("lock") && currentLockState != LockState.LOCKED)
+                        startLock();
+                    else if (action.equals("unlock") && currentLockState != LockState.UNLOCKED)
+                        stopLock();
+                    else {
+                        writer.write("failed");
+                        reader.close();
+                        socket.close();
+                        continue;
                     }
 
+                    writer.write(action + " success");
                     reader.close();
                     socket.close();
                 }
@@ -298,6 +309,7 @@ public class LockService extends Service {
 
     private void stopLock() {
         showToast("Device is Unlocked");
+        currentLockState = LockState.UNLOCKED;
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
         sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
         timerDisposable.dispose();
@@ -305,6 +317,7 @@ public class LockService extends Service {
 
     private void startLock() {
         showToast("Device is Locked");
+        currentLockState = LockState.LOCKED;
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
         startLockOps();
     }
