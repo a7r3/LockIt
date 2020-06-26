@@ -39,6 +39,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -50,6 +51,7 @@ import nooblife.lockit.activities.LockActivity;
 import nooblife.lockit.activities.PostLockdownActivity;
 import nooblife.lockit.database.BlacklistDatabase;
 import nooblife.lockit.util.Constants;
+import nooblife.lockit.util.LockItServer;
 import nooblife.lockit.util.Utils;
 
 import static androidx.core.app.NotificationCompat.PRIORITY_MIN;
@@ -64,12 +66,6 @@ public class LockService extends Service {
     private Observer<Long> timerObserver;
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
-
-    enum LockState {
-        LOCKED, UNLOCKED
-    }
-
-    private LockState currentLockState;
 
     private void showToast(final String text) {
         new Handler(Looper.getMainLooper()).post(() ->
@@ -98,74 +94,34 @@ public class LockService extends Service {
                 }
             }
 
-            Log.d(TAG, "onStartCommand: Starting Lock Service");
+            Log.d(TAG, "onStartCommand: Initializing LockIt Server");
+            LockItServer.initialize(this, new LockItServer.ServerEventListener() {
+                @Override
+                public void onLock() {
+                    startLock();
+                }
+
+                @Override
+                public void onUnlock() {
+                    stopLock();
+                }
+
+                @Override
+                public void onPair() {
+
+                }
+            }).start();
+
+            // Lock the Device now
             startLock();
         }
 
         return START_NOT_STICKY;
     }
 
-    private int serverPort = -1;
-
-    private void initializeServer() {
-        Executors.newSingleThreadExecutor().execute(() -> {
-            try {
-                ServerSocket serverSocket = new ServerSocket(0, 1, InetAddress.getByName("0.0.0.0"));
-                Log.d(TAG, "initializeServer: server started @ " + serverSocket.getInetAddress() + ":" + serverSocket.getLocalPort());
-                serverPort = serverSocket.getLocalPort();
-                startBonjourService();
-
-                while (true) {
-                    Socket socket = serverSocket.accept();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    PrintWriter writer = new PrintWriter(socket.getOutputStream());
-
-                    Log.d(TAG, "run: Client Connected " + socket.getInetAddress().getHostAddress());
-
-                    String action = reader.readLine();
-                    Log.d(TAG, "initializeServer: Client says: " + action);
-                    if (action.equals("lock") && currentLockState != LockState.LOCKED)
-                        startLock();
-                    else if (action.equals("unlock") && currentLockState != LockState.UNLOCKED)
-                        stopLock();
-                    else {
-                        writer.write("failed");
-                        reader.close();
-                        socket.close();
-                        continue;
-                    }
-
-                    writer.write(action + " success");
-                    reader.close();
-                    socket.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    private void startBonjourService() {
-        Rx2Dnssd rx2Dnssd = new Rx2DnssdBindable(this);
-        BonjourService bs = new BonjourService.Builder(
-                0,
-                0,
-                Constants.LOCKIT_DISCOVERY_SERVICE_ID,
-                Constants.LOCKIT_SERVICE_TYPE,
-                null
-        ).port(serverPort).build();
-
-        // TODO I don't think we'd dispose this, ever...
-        Disposable registerDisposable = rx2Dnssd.register(bs)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(bonjourService -> Log.d(TAG, "accept: registered @ " + bonjourService.getRegType()),
-                        Throwable::printStackTrace);
-    }
 
     private void startLockOps() {
         Log.d(TAG, "startLockOps: Started Lock Service");
-        initializeServer();
 
         Utils.exitToLauncher(this);
 
@@ -309,7 +265,6 @@ public class LockService extends Service {
 
     private void stopLock() {
         showToast("Device is Unlocked");
-        currentLockState = LockState.UNLOCKED;
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
         sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
         timerDisposable.dispose();
@@ -317,7 +272,6 @@ public class LockService extends Service {
 
     private void startLock() {
         showToast("Device is Locked");
-        currentLockState = LockState.LOCKED;
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
         startLockOps();
     }
