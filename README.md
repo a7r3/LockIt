@@ -37,22 +37,21 @@ NsdManager's interaction with mdns android daemon works very well (Device Logs a
 
 Interaction with mdnsd works, App's informed about it, Discovery and Connection takes a few ms! Safe to say we've reached the peak.
 
-* Authentication
-* Manage Permissions
+* ~Authentication~ Basic done
+* ~Manage Permissions~ Not required
 * Manage Disconnection Failures
 * Manage Retry Attempts
 * ~Prevent Multiple instances of LockActivity to open up (this was an issue with FCM, when a burst of messages were sent to the device)~
 * ~See if LockService advertising forever can be tackled~ Current implementation works only when device is awake. Still, can look out for some more reduction.
-  Well, a TV is always awake :shrug:...
+<br>Well, a TV is always awake :shrug:...
 
 ## Working
 
 Android TV (Locked Device) + Phone (Key):
 
-Auth is a TODO now
-~Fresh Start:~
-~1. (Fresh Start) TV and Phone must connect with each other for the first time, with User side authorization in the UI~
-~2. Connections hereon will be made directly with implicit auth (TV and Phone connect with the auth code known only to these devices)~
+Fresh Start:
+1. (Fresh Start) TV and Phone must connect with each other for the first time. Connections to the TV are open until the remote client connects to it.
+2. Connections hereon will be made directly with the UUID known to the device pair
 
 After Fresh Start:
 1. Lock can either be started manually in the TV App OR can be done directly from the phone
