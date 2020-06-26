@@ -94,7 +94,7 @@ public class LockItServer {
                         listener.onUnlock();
                     } else if (action.equals("pair")) {
                         String dedicatedServiceId = UUID.randomUUID().toString();
-                        writer.write(dedicatedServiceId);
+                        writer.println(dedicatedServiceId);
                         PreferenceManager.getDefaultSharedPreferences(context)
                             .edit().putString(Constants.PREF_LOCKIT_RC_SERVICE_ID, dedicatedServiceId).apply();
                         listener.onPair();
@@ -105,7 +105,7 @@ public class LockItServer {
                         continue;
                     }
 
-                    writer.close();
+                    writer.flush();
                     reader.close();
                     socket.close();
                 }

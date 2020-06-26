@@ -81,7 +81,7 @@ public class TvMainActivity extends Activity {
             public void onPair() {
                 serviceId = sharedPreferences.getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID);
                 bsd.cancel();
-                Toast.makeText(TvMainActivity.this, "Phone paired successfully", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(TvMainActivity.this, "Phone paired successfully", Toast.LENGTH_SHORT).show();
             }
         });
         lockItServer.setInPairingMode();
