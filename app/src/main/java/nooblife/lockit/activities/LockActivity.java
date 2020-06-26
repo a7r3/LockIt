@@ -50,19 +50,13 @@ public class LockActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lock);
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        applyLockedAppDetails(intent);
+    }
 
-        registerReceiver(receiver, new IntentFilter(Constants.ACTION_STOP_LOCKACTIVITY));
-
-        overridePendingTransition(0, 0);
-
-        applicationPkg = getIntent().getStringExtra("APP");
-
-        applicationName = findViewById(R.id.text_error_content);
-        applicationIcon = findViewById(R.id.application_icon);
-        exitButton = findViewById(R.id.exit_button);
+    private void applyLockedAppDetails(Intent intent) {
+        applicationPkg = intent.getStringExtra("APP");
 
         try {
             info = getPackageManager().getApplicationInfo(applicationPkg, 0);
@@ -72,13 +66,24 @@ public class LockActivity extends AppCompatActivity {
             applicationName.setText(info.loadLabel(getPackageManager()));
             applicationIcon.setImageDrawable(getPackageManager().getApplicationIcon(info));
         }
+    }
 
-        exitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                LockActivity.this.onBackPressed();
-            }
-        });
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_lock);
+
+        registerReceiver(receiver, new IntentFilter(Constants.ACTION_STOP_LOCKACTIVITY));
+
+        overridePendingTransition(0, 0);
+
+        applyLockedAppDetails(getIntent());
+
+        applicationName = findViewById(R.id.text_error_content);
+        applicationIcon = findViewById(R.id.application_icon);
+        exitButton = findViewById(R.id.exit_button);
+
+        exitButton.setOnClickListener(v -> LockActivity.this.onBackPressed());
 
     }
 }

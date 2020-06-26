@@ -9,10 +9,7 @@ import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.net.nsd.NsdManager;
-import android.net.nsd.NsdServiceInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -21,7 +18,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
@@ -29,16 +25,6 @@ import androidx.preference.PreferenceManager;
 import com.github.druk.rx2dnssd.BonjourService;
 import com.github.druk.rx2dnssd.Rx2Dnssd;
 import com.github.druk.rx2dnssd.Rx2DnssdBindable;
-import com.github.druk.rx2dnssd.Rx2DnssdEmbedded;
-import com.google.android.gms.nearby.Nearby;
-import com.google.android.gms.nearby.connection.AdvertisingOptions;
-import com.google.android.gms.nearby.connection.ConnectionInfo;
-import com.google.android.gms.nearby.connection.ConnectionLifecycleCallback;
-import com.google.android.gms.nearby.connection.ConnectionResolution;
-import com.google.android.gms.nearby.connection.Payload;
-import com.google.android.gms.nearby.connection.PayloadCallback;
-import com.google.android.gms.nearby.connection.PayloadTransferUpdate;
-import com.google.android.gms.nearby.connection.Strategy;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -57,8 +43,6 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import nooblife.lockit.R;
 import nooblife.lockit.activities.LockActivity;
@@ -77,17 +61,13 @@ public class LockService extends Service {
     private List<String> blackList;
     private Observable<Long> timerObservable;
     private Observer<Long> timerObserver;
-    private Disposable disposable;
+    private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
-    private String connectedEndpoint;
 
     private void showToast(final String text) {
-        new Handler(Looper.getMainLooper()).post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(LockService.this, text, Toast.LENGTH_LONG).show();
-            }
-        });
+        new Handler(Looper.getMainLooper()).post(() ->
+                Toast.makeText(LockService.this, text, Toast.LENGTH_LONG).show()
+        );
     }
 
     @Nullable
@@ -105,8 +85,7 @@ public class LockService extends Service {
                 Log.d(TAG, "onStartCommand: Checking if service was running on last boot");
                 boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).blacklistDao().isServiceActiveOnLastBoot();
                 if (!hasToBeRestarted) {
-                    Log.d(TAG, "onStartCommand: Service was not running on last boot");
-                    Log.d(TAG, "onStartCommand: Aborting self");
+                    Log.d(TAG, "onStartCommand: Destroying Service: since it wasn't running on last boot");
                     LockService.this.onDestroy();
                     return START_NOT_STICKY;
                 }
@@ -125,17 +104,26 @@ public class LockService extends Service {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 ServerSocket serverSocket = new ServerSocket(0, 1, InetAddress.getByName("0.0.0.0"));
+                Log.d(TAG, "initializeServer: server started @ " + serverSocket.getInetAddress() + ":" + serverSocket.getLocalPort());
                 serverPort = serverSocket.getLocalPort();
-                Log.d(TAG, "initializeServer: server started @ " + serverSocket.getInetAddress() + " " + serverSocket.getLocalPort());
-                startNsdService();
+                startBonjourService();
 
                 while (true) {
                     Socket socket = serverSocket.accept();
-                    BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(socket.getInputStream())
-                    );
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                     Log.d(TAG, "run: Client Connected " + socket.getInetAddress().getHostAddress());
+
+                    String action = reader.readLine();
+                    Log.d(TAG, "initializeServer: Client says: " + action);
+                    switch(action) {
+                        case "lock":
+                            stopLock();
+                            break;
+                        case "unlock":
+                            startLock();
+                            break;
+                    }
 
                     reader.close();
                     socket.close();
@@ -146,35 +134,26 @@ public class LockService extends Service {
         });
     }
 
-    private void startNsdService() {
+    private void startBonjourService() {
         Rx2Dnssd rx2Dnssd = new Rx2DnssdBindable(this);
-        BonjourService bs = new BonjourService.Builder(0, 0, Constants.LOCKIT_DISCOVERY_SERVICE_ID, Constants.LOCKIT_SERVICE_TYPE, null).port(serverPort).build();
+        BonjourService bs = new BonjourService.Builder(
+                0,
+                0,
+                Constants.LOCKIT_DISCOVERY_SERVICE_ID,
+                Constants.LOCKIT_SERVICE_TYPE,
+                null
+        ).port(serverPort).build();
+
+        // TODO I don't think we'd dispose this, ever...
         Disposable registerDisposable = rx2Dnssd.register(bs)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Consumer<BonjourService>() {
-                    @Override
-                    public void accept(BonjourService bonjourService) throws Exception {
-                        Log.d(TAG, "accept: registered @ " + bonjourService.getRegType());
-                    }
-                }, new Consumer<Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-                        throwable.printStackTrace();
-                    }
-                }, new Action() {
-                    @Override
-                    public void run() throws Exception {
-
-                    }
-                });
+                .subscribe(bonjourService -> Log.d(TAG, "accept: registered @ " + bonjourService.getRegType()),
+                        Throwable::printStackTrace);
     }
 
     private void startLockOps() {
-        showToast("Device is Locked");
-
         Log.d(TAG, "startLockOps: Started Lock Service");
-
         initializeServer();
 
         Utils.exitToLauncher(this);
@@ -182,30 +161,21 @@ public class LockService extends Service {
         Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                 .subscribeOn(Schedulers.io())
                 .observeOn(Schedulers.io())
-                .doOnNext(new Consumer<ApplicationInfo>() {
-                    @Override
-                    public void accept(ApplicationInfo applicationInfo) {
-                        allApplicationPackages.add(applicationInfo.packageName);
-                    }
-                })
-                .doOnComplete(new Action() {
-                    @Override
-                    public void run() throws Exception {
-                        blackList = BlacklistDatabase
-                                .getInstance(LockService.this)
-                                .blacklistDao()
-                                .getBlacklist()
-                                .getPackageList();
+                .doOnNext(applicationInfo -> allApplicationPackages.add(applicationInfo.packageName))
+                .doOnComplete(() -> {
+                    blackList = BlacklistDatabase
+                            .getInstance(LockService.this)
+                            .blacklistDao()
+                            .getBlacklist()
+                            .getPackageList();
 
-                        timerObservable = Observable
-                                .interval(0, 1L, TimeUnit.SECONDS)
-                                .subscribeOn(Schedulers.io());
+                    timerObservable = Observable
+                            .interval(0, 1L, TimeUnit.SECONDS)
+                            .subscribeOn(Schedulers.io());
 
-                        initTimerObserver();
+                    initTimerObserver();
 
-                        timerObservable.subscribe(timerObserver);
-
-                    }
+                    timerObservable.subscribe(timerObserver);
                 })
                 .subscribe();
 
@@ -216,7 +186,7 @@ public class LockService extends Service {
         timerObserver = new Observer<Long>() {
             @Override
             public void onSubscribe(Disposable d) {
-                disposable = d;
+                timerDisposable = d;
             }
 
             @Override
@@ -226,17 +196,15 @@ public class LockService extends Service {
 
             @Override
             public void onError(Throwable e) {
-
+                e.printStackTrace();
             }
 
             @Override
             public void onComplete() {
-                new Handler(getMainLooper()).post(new Runnable() {
-                    @Override
-                    public void run() {
-                        startActivity(new Intent(LockService.this, PostLockdownActivity.class));
-                        Log.d(TAG, "LockService Complete");
-                    }
+                // complete? never
+                new Handler(getMainLooper()).post(() -> {
+                    startActivity(new Intent(LockService.this, PostLockdownActivity.class));
+                    Log.d(TAG, "LockService Complete");
                 });
             }
         };
@@ -273,13 +241,14 @@ public class LockService extends Service {
                             Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
                             defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
                             // If the currently open app is LockIt
+                            // if (pkg.equals(getPackageName()))
                             // TODO Show a LockActivity, but with a Auth Entry
-                            if (pkg.equals(getPackageName()))
-                                return;
+                            //    return;
                             // If the Currently open App is the Default Launcher
                             // Don't block it
                             if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
                                 return;
+
                             if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
                                 Intent intent = new Intent(LockService.this, LockActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -331,10 +300,11 @@ public class LockService extends Service {
         showToast("Device is Unlocked");
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
         sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
-        disposable.dispose();
+        timerDisposable.dispose();
     }
 
     private void startLock() {
+        showToast("Device is Locked");
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
         startLockOps();
     }
