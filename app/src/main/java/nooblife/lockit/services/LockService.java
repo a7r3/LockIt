@@ -6,8 +6,10 @@ import android.app.NotificationManager;
 import android.app.Service;
 import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Binder;
@@ -22,24 +24,11 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
-import com.github.druk.rx2dnssd.BonjourService;
-import com.github.druk.rx2dnssd.Rx2Dnssd;
-import com.github.druk.rx2dnssd.Rx2DnssdBindable;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
@@ -48,7 +37,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import nooblife.lockit.R;
 import nooblife.lockit.activities.LockActivity;
-import nooblife.lockit.activities.PostLockdownActivity;
 import nooblife.lockit.database.BlacklistDatabase;
 import nooblife.lockit.util.Constants;
 import nooblife.lockit.util.LockItServer;
@@ -66,6 +54,12 @@ public class LockService extends Service {
     private Observer<Long> timerObserver;
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
+    private BroadcastReceiver resumeTimerReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            startTimerObserver();
+        }
+    };
 
     private void showToast(final String text) {
         new Handler(Looper.getMainLooper()).post(() ->
@@ -119,11 +113,12 @@ public class LockService extends Service {
         return START_NOT_STICKY;
     }
 
-
     private void startLockOps() {
         Log.d(TAG, "startLockOps: Started Lock Service");
 
         Utils.exitToLauncher(this);
+
+        registerReceiver(resumeTimerReceiver, new IntentFilter(Constants.ACTION_RESUME_TIMERTASK));
 
         Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                 .subscribeOn(Schedulers.io())
@@ -140,41 +135,22 @@ public class LockService extends Service {
                             .interval(0, 1L, TimeUnit.SECONDS)
                             .subscribeOn(Schedulers.io());
 
-                    initTimerObserver();
+                    startTimerObserver();
 
-                    timerObservable.subscribe(timerObserver);
-                })
-                .subscribe();
+                }).subscribe();
 
     }
 
-    public void initTimerObserver() {
+    private void startTimerObserver() {
+        timerDisposable = timerObservable.subscribe(
+                next -> checkCurrentlyRunningAppAndLock(),
+                error -> error.printStackTrace()
+        );
+    }
 
-        timerObserver = new Observer<Long>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                timerDisposable = d;
-            }
-
-            @Override
-            public void onNext(Long aLong) {
-                checkCurrentlyRunningAppAndLock();
-            }
-
-            @Override
-            public void onError(Throwable e) {
-                e.printStackTrace();
-            }
-
-            @Override
-            public void onComplete() {
-                // complete? never
-                new Handler(getMainLooper()).post(() -> {
-                    startActivity(new Intent(LockService.this, PostLockdownActivity.class));
-                    Log.d(TAG, "LockService Complete");
-                });
-            }
-        };
+    private void stopTimerObserver() {
+        if (timerDisposable != null && !timerDisposable.isDisposed())
+            timerDisposable.dispose();
     }
 
     private void checkCurrentlyRunningAppAndLock() {
@@ -207,10 +183,11 @@ public class LockService extends Service {
                             final String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
                             Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
                             defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
-                            // If the currently open app is LockIt
-                            // if (pkg.equals(getPackageName()))
                             // TODO Show a LockActivity, but with a Auth Entry
-                            //    return;
+                            // If the currently open app is LockIt (or anything with LockIt)
+                            // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
+                            if (pkg.equals(getPackageName()))
+                                return;
                             // If the Currently open App is the Default Launcher
                             // Don't block it
                             if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
@@ -220,6 +197,7 @@ public class LockService extends Service {
                                 Intent intent = new Intent(LockService.this, LockActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                 intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
+                                stopTimerObserver();
                                 LockService.this.startActivity(intent);
                             }
                         }

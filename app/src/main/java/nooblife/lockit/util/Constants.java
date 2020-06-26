@@ -13,4 +13,5 @@ public class Constants {
     public static final String LOCKIT_SERVICE_TEMPLATE = "_%s._tcp";
     public static final String ACTION_RESTART_LOCKSERVICE = "nooblife.lockit.ACTION_RESTART_LOCKSERVICE";
     public static final String ACTION_STOP_LOCKACTIVITY = "nooblife.lockit.ACTION_STOP_LOCKACTIVITY";
+    public static final String ACTION_RESUME_TIMERTASK = "nooblife.lockit.ACTION_RESUME_TIMERTASK";
 }

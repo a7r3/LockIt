@@ -125,7 +125,6 @@ public class LockItServer {
                 null
         ).port(serverPort).build();
 
-        // TODO I don't think we'd dispose this, ever...
         registerDisposable = rx2Dnssd.register(bs)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

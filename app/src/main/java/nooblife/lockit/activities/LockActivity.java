@@ -41,6 +41,8 @@ public class LockActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         unregisterReceiver(receiver);
+        // Resume the Timer
+        sendBroadcast(new Intent(Constants.ACTION_RESUME_TIMERTASK));
         super.onDestroy();
     }
 
@@ -68,6 +70,7 @@ public class LockActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,13 +80,12 @@ public class LockActivity extends AppCompatActivity {
 
         overridePendingTransition(0, 0);
 
-        applyLockedAppDetails(getIntent());
-
         applicationName = findViewById(R.id.text_error_content);
         applicationIcon = findViewById(R.id.application_icon);
         exitButton = findViewById(R.id.exit_button);
 
         exitButton.setOnClickListener(v -> LockActivity.this.onBackPressed());
 
+        applyLockedAppDetails(getIntent());
     }
 }
