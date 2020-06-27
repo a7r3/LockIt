@@ -54,10 +54,16 @@ public class LockService extends Service {
     private Observer<Long> timerObserver;
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
-    private BroadcastReceiver resumeTimerReceiver = new BroadcastReceiver() {
+    private boolean isLockActivityRunning = false;
+    private BroadcastReceiver lockActivityBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            startTimerObserver();
+            if (intent.getAction() != null) {
+                if (intent.getAction().equals(Constants.ACTION_LOCKACTIVITY_STATUSREPORT))
+                    isLockActivityRunning = intent.getBooleanExtra(Constants.EXTRA_IS_LOCKACTIVITY_ONTOP, true);
+                else if (intent.getAction().equals(Constants.ACTION_RESUME_TIMERTASK))
+                    startTimerObserver();
+            }
         }
     };
 
@@ -118,7 +124,10 @@ public class LockService extends Service {
 
         Utils.exitToLauncher(this);
 
-        registerReceiver(resumeTimerReceiver, new IntentFilter(Constants.ACTION_RESUME_TIMERTASK));
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constants.ACTION_RESUME_TIMERTASK);
+        filter.addAction(Constants.ACTION_LOCKACTIVITY_STATUSREPORT);
+        registerReceiver(lockActivityBroadcastReceiver, filter);
 
         Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                 .subscribeOn(Schedulers.io())
@@ -184,9 +193,9 @@ public class LockService extends Service {
                             Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
                             defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
                             // TODO Show a LockActivity, but with a Auth Entry
-                            // If the currently open app is LockIt (or anything with LockIt)
+                            // If the currently open app is Lockit->LockActivity
                             // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
-                            if (pkg.equals(getPackageName()))
+                            if (pkg.equals(getPackageName()) && isLockActivityRunning)
                                 return;
                             // If the Currently open App is the Default Launcher
                             // Don't block it
@@ -257,6 +266,7 @@ public class LockService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        unregisterReceiver(lockActivityBroadcastReceiver);
         // What's the use of a notification, when the service behind it is about to stop
         stopForeground(true);
         stopSelf();

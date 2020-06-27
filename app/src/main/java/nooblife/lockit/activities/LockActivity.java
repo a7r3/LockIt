@@ -46,8 +46,19 @@ public class LockActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+        Intent intent = new Intent(Constants.ACTION_LOCKACTIVITY_STATUSREPORT);
+        intent.putExtra(Constants.EXTRA_IS_LOCKACTIVITY_ONTOP, false);
+        sendBroadcast(intent);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        Intent intent = new Intent(Constants.ACTION_LOCKACTIVITY_STATUSREPORT);
+        intent.putExtra(Constants.EXTRA_IS_LOCKACTIVITY_ONTOP, true);
+        sendBroadcast(intent);
     }
 
     @Override

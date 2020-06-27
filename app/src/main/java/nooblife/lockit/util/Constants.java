@@ -14,4 +14,6 @@ public class Constants {
     public static final String ACTION_RESTART_LOCKSERVICE = "nooblife.lockit.ACTION_RESTART_LOCKSERVICE";
     public static final String ACTION_STOP_LOCKACTIVITY = "nooblife.lockit.ACTION_STOP_LOCKACTIVITY";
     public static final String ACTION_RESUME_TIMERTASK = "nooblife.lockit.ACTION_RESUME_TIMERTASK";
+    public static final String ACTION_LOCKACTIVITY_STATUSREPORT = "nooblife.lockit.ACTION_LOCKACTIVITY_STATUSREPORT";
+    public static final String EXTRA_IS_LOCKACTIVITY_ONTOP = "nooblife.lockit.extras.LOCKACTIVITY_ONTOP";
 }
