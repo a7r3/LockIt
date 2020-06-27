@@ -1,7 +1,6 @@
 package nooblife.lockit.util;
 
 import android.content.Context;
-import android.net.wifi.aware.DiscoverySession;
 import android.os.Build;
 import android.util.Log;
 
@@ -28,26 +27,16 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LockItServer {
 
+    private static LockItServer instance;
     public final String TAG = getClass().getSimpleName();
+    ServerSocket serverSocket;
+    Disposable registerDisposable;
     private int serverPort = -1;
     private LockState currentLockState;
     private ServerEventListener listener;
     private Context context;
-    private static LockItServer instance;
     private boolean isRunning;
     private boolean isInPairingMode;
-
-    enum LockState {
-        LOCKED, UNLOCKED
-    }
-
-    private String getServiceId() {
-        return String.format(Constants.LOCKIT_SERVICE_TEMPLATE,
-                    isInPairingMode
-                    ? Constants.LOCKIT_DEFAULT_SERVICE_ID
-                    : PreferenceManager.getDefaultSharedPreferences(context)
-                        .getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID));
-    }
 
     private LockItServer(Context context, ServerEventListener serverEventListener) {
         this.context = context;
@@ -57,17 +46,23 @@ public class LockItServer {
         this.isInPairingMode = false;
     }
 
-    public void setInPairingMode() {
-        isInPairingMode = true;
-    }
-
     public static LockItServer initialize(Context context, @NonNull ServerEventListener serverEventListener) {
         if (instance == null)
             instance = new LockItServer(context, serverEventListener);
         return instance;
     }
 
-    ServerSocket serverSocket;
+    private String getServiceId() {
+        return String.format(Constants.LOCKIT_SERVICE_TEMPLATE,
+                isInPairingMode
+                        ? Constants.LOCKIT_DEFAULT_SERVICE_ID
+                        : PreferenceManager.getDefaultSharedPreferences(context)
+                        .getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID));
+    }
+
+    public void setInPairingMode() {
+        isInPairingMode = true;
+    }
 
     public void start() {
         Executors.newSingleThreadExecutor().execute(() -> {
@@ -96,7 +91,7 @@ public class LockItServer {
                         String dedicatedServiceId = UUID.randomUUID().toString();
                         writer.println(dedicatedServiceId);
                         PreferenceManager.getDefaultSharedPreferences(context)
-                            .edit().putString(Constants.PREF_LOCKIT_RC_SERVICE_ID, dedicatedServiceId).apply();
+                                .edit().putString(Constants.PREF_LOCKIT_RC_SERVICE_ID, dedicatedServiceId).apply();
                         listener.onPair();
                     } else {
                         writer.println("failed");
@@ -134,8 +129,6 @@ public class LockItServer {
                 }, Throwable::printStackTrace);
     }
 
-    Disposable registerDisposable;
-
     public void stop() {
         if (!isRunning) return;
 
@@ -150,9 +143,15 @@ public class LockItServer {
         }
     }
 
+    enum LockState {
+        LOCKED, UNLOCKED
+    }
+
     public interface ServerEventListener {
         void onLock();
+
         void onUnlock();
+
         void onPair();
     }
 

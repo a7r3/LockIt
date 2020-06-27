@@ -133,16 +133,16 @@ public class Utils {
         ContextCompat.startForegroundService(context, lockServiceIntent);
     }
 
-    public interface AppRetrivalInterface {
-        void onProgress();
-
-        void onComplete(List<Application> applications);
-    }
-
     public static void exitToLauncher(Context context) {
         Intent exitToLauncher = new Intent(Intent.ACTION_MAIN);
         exitToLauncher.addCategory(Intent.CATEGORY_HOME);
         exitToLauncher.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         context.startActivity(exitToLauncher);
+    }
+
+    public interface AppRetrivalInterface {
+        void onProgress();
+
+        void onComplete(List<Application> applications);
     }
 }

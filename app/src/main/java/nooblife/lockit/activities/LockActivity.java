@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -25,19 +24,18 @@ public class LockActivity extends AppCompatActivity {
     private TextView exitButton;
     private String applicationPkg;
     private ApplicationInfo info;
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        Utils.exitToLauncher(this);
-    }
-
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             finish();
         }
     };
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Utils.exitToLauncher(this);
+    }
 
     @Override
     protected void onDestroy() {
