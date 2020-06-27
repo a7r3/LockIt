@@ -41,7 +41,7 @@ public class LockItServer {
         LOCKED, UNLOCKED
     }
 
-    public String getServiceId() {
+    private String getServiceId() {
         return String.format(Constants.LOCKIT_SERVICE_TEMPLATE,
                     isInPairingMode
                     ? Constants.LOCKIT_DEFAULT_SERVICE_ID
@@ -73,7 +73,7 @@ public class LockItServer {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
                 serverSocket = new ServerSocket(0, 1, InetAddress.getByName("0.0.0.0"));
-                Log.d(TAG, "initializeServer: server started @ " + serverSocket.getInetAddress() + ":" + serverSocket.getLocalPort());
+                Log.i(TAG, "Server: Started @ " + serverSocket.getInetAddress() + ":" + serverSocket.getLocalPort());
                 serverPort = serverSocket.getLocalPort();
                 startDNSSDService();
 
@@ -82,10 +82,10 @@ public class LockItServer {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
-                    Log.d(TAG, "run: Client Connected " + socket.getInetAddress().getHostAddress());
+                    Log.i(TAG, "Server: Client Connected: " + socket.getInetAddress().getHostAddress());
 
                     String action = reader.readLine();
-                    Log.d(TAG, "initializeServer: Client says: " + action);
+                    Log.i(TAG, "Server: Client says: " + action);
                     if (action.equals("lock") && currentLockState != LockState.LOCKED) {
                         currentLockState = LockState.LOCKED;
                         listener.onLock();
@@ -99,7 +99,7 @@ public class LockItServer {
                             .edit().putString(Constants.PREF_LOCKIT_RC_SERVICE_ID, dedicatedServiceId).apply();
                         listener.onPair();
                     } else {
-                        writer.write("failed");
+                        writer.println("failed");
                         reader.close();
                         socket.close();
                         continue;
@@ -129,7 +129,7 @@ public class LockItServer {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(bonjourService -> {
-                    Log.d(TAG, "accept: registered @ " + bonjourService.getRegType());
+                    Log.i(TAG, "DNSSD Service: Registered @ " + bonjourService.getRegType());
                     isRunning = true;
                 }, Throwable::printStackTrace);
     }
@@ -142,6 +142,7 @@ public class LockItServer {
         try {
             registerDisposable.dispose();
             serverSocket.close();
+            Log.i(TAG, "Server: is stopped");
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
