@@ -38,6 +38,11 @@ public class LockItServer {
     private boolean isRunning;
     private boolean isInPairingMode;
 
+    private OnPairEventListener onPairEventListener;
+    private OnLockEventListener onLockEventListener;
+    private OnUnlockEventListener onUnlockEventListener;
+
+    @Deprecated
     private LockItServer(Context context, ServerEventListener serverEventListener) {
         this.context = context;
         this.listener = serverEventListener;
@@ -46,10 +51,40 @@ public class LockItServer {
         this.isInPairingMode = false;
     }
 
+    private LockItServer(Context context) {
+        this.context = context;
+        this.currentLockState = LockState.LOCKED;
+        this.isRunning = false;
+        this.isInPairingMode = false;
+    }
+
+    @Deprecated
     public static LockItServer initialize(Context context, @NonNull ServerEventListener serverEventListener) {
         if (instance == null)
             instance = new LockItServer(context, serverEventListener);
         return instance;
+    }
+
+    public static LockItServer initialize(Context context) {
+        if (instance == null)
+            instance = new LockItServer(context);
+        return instance;
+    }
+
+    public LockItServer onPair(OnPairEventListener listener) {
+        setInPairingMode();
+        this.onPairEventListener = listener;
+        return this;
+    }
+
+    public LockItServer onLock(OnLockEventListener listener) {
+        this.onLockEventListener = listener;
+        return this;
+    }
+
+    public LockItServer onUnlock(OnUnlockEventListener listener) {
+        this.onUnlockEventListener = listener;
+        return this;
     }
 
     private String getServiceId() {
@@ -60,7 +95,7 @@ public class LockItServer {
                         .getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID));
     }
 
-    public void setInPairingMode() {
+    private void setInPairingMode() {
         isInPairingMode = true;
     }
 
@@ -84,15 +119,18 @@ public class LockItServer {
                     if (action.equals("lock") && currentLockState != LockState.LOCKED) {
                         currentLockState = LockState.LOCKED;
                         listener.onLock();
+                        if (onLockEventListener != null) onLockEventListener.onLock();
                     } else if (action.equals("unlock") && currentLockState != LockState.UNLOCKED) {
                         currentLockState = LockState.UNLOCKED;
                         listener.onUnlock();
+                        if (onUnlockEventListener != null) onUnlockEventListener.onUnlock();
                     } else if (action.equals("pair")) {
                         String dedicatedServiceId = UUID.randomUUID().toString();
                         writer.println(dedicatedServiceId);
                         PreferenceManager.getDefaultSharedPreferences(context)
                                 .edit().putString(Constants.PREF_LOCKIT_RC_SERVICE_ID, dedicatedServiceId).apply();
                         listener.onPair();
+                        if (onPairEventListener != null) onPairEventListener.onPair();
                     } else {
                         writer.println("failed");
                         reader.close();
@@ -147,6 +185,22 @@ public class LockItServer {
         LOCKED, UNLOCKED
     }
 
+    @FunctionalInterface
+    public interface OnLockEventListener {
+        void onLock();
+    }
+
+    @FunctionalInterface
+    public interface OnUnlockEventListener {
+        void onUnlock();
+    }
+
+    @FunctionalInterface
+    public interface OnPairEventListener {
+        void onPair();
+    }
+
+    @Deprecated
     public interface ServerEventListener {
         void onLock();
 

@@ -103,22 +103,10 @@ public class LockService extends Service {
             }
 
             Log.d(TAG, "onStartCommand: Initializing LockIt Server");
-            LockItServer.initialize(this, new LockItServer.ServerEventListener() {
-                @Override
-                public void onLock() {
-                    startLock();
-                }
-
-                @Override
-                public void onUnlock() {
-                    stopLock();
-                }
-
-                @Override
-                public void onPair() {
-
-                }
-            }).start();
+            LockItServer.initialize(this)
+                    .onLock(this::startLock)
+                    .onUnlock(this::stopLock)
+                    .start();
 
             // Lock the Device now
             startLock();

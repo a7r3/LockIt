@@ -66,25 +66,13 @@ public class TvMainActivity extends Activity {
         };
         bsd.setCancelable(true);
 
-        lockItServer = LockItServer.initialize(TvMainActivity.this, new LockItServer.ServerEventListener() {
-            @Override
-            public void onLock() {
+        lockItServer = LockItServer.initialize(this)
+                .onPair(() -> {
+                    serviceId = sharedPreferences.getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID);
+                    bsd.cancel();
+                });
 
-            }
-
-            @Override
-            public void onUnlock() {
-
-            }
-
-            @Override
-            public void onPair() {
-                serviceId = sharedPreferences.getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID);
-                bsd.cancel();
-//                Toast.makeText(TvMainActivity.this, "Phone paired successfully", Toast.LENGTH_SHORT).show();
-            }
-        });
-        lockItServer.setInPairingMode();
+        lockItServer.start();
 
         connectionView = findViewById(R.id.connection_view);
         connectionView.setOnClickListener(v -> {
