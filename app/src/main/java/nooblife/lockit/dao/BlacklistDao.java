@@ -17,7 +17,7 @@ public interface BlacklistDao {
     void createBlacklist(Blacklist blacklist);
 
     @Query("SELECT isActive FROM apps WHERE profileName = 'default'")
-    boolean isServiceActiveOnLastBoot();
+    boolean isServiceActive();
 
     @Query("UPDATE apps SET isActive = :isServiceRunningNow WHERE profileName = 'default'")
     void setServiceActive(boolean isServiceRunningNow);

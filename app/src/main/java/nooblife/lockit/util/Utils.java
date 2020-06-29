@@ -119,7 +119,6 @@ public class Utils {
     public static void startLockService(Context context) {
         // This method would be either called by Remote Locker OR In-App UI
         // So, the user explicitly calls LockService
-        BlacklistDatabase.getInstance(context).blacklistDao().setServiceActive(true);
         startLockService(context, "");
     }
 

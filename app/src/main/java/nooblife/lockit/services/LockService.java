@@ -38,6 +38,7 @@ import io.reactivex.schedulers.Schedulers;
 import nooblife.lockit.R;
 import nooblife.lockit.activities.LockActivity;
 import nooblife.lockit.database.BlacklistDatabase;
+import nooblife.lockit.model.Blacklist;
 import nooblife.lockit.util.Constants;
 import nooblife.lockit.util.LockItServer;
 import nooblife.lockit.util.Utils;
@@ -59,10 +60,15 @@ public class LockService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction() != null) {
-                if (intent.getAction().equals(Constants.ACTION_LOCKACTIVITY_STATUSREPORT))
-                    isLockActivityRunning = intent.getBooleanExtra(Constants.EXTRA_IS_LOCKACTIVITY_ONTOP, true);
-                else if (intent.getAction().equals(Constants.ACTION_RESUME_TIMERTASK))
-                    startTimerObserver();
+                switch(intent.getAction()) {
+                    case Constants.ACTION_LOCKACTIVITY_STATUSREPORT:
+                        isLockActivityRunning = intent.getBooleanExtra(Constants.EXTRA_IS_LOCKACTIVITY_ONTOP, true);
+                        break;
+                    case Constants.ACTION_RESUME_TIMERTASK:
+                        if (BlacklistDatabase.getInstance(context).blacklistDao().isServiceActive())
+                            startTimerObserver();
+                        break;
+                }
             }
         }
     };
@@ -86,11 +92,13 @@ public class LockService extends Service {
             if (intent.getAction().equalsIgnoreCase(Constants.ACTION_RESTART_LOCKSERVICE)) {
                 Log.d(TAG, "onStartCommand: called on BOOT_COMPLETED broadcast");
                 Log.d(TAG, "onStartCommand: Checking if service was running on last boot");
-                boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).blacklistDao().isServiceActiveOnLastBoot();
+                boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive();
                 if (!hasToBeRestarted) {
                     Log.d(TAG, "onStartCommand: Destroying Service: since it wasn't running on last boot");
                     LockService.this.onDestroy();
                     return START_NOT_STICKY;
+                } else {
+                    BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
                 }
             }
 
@@ -162,6 +170,79 @@ public class LockService extends Service {
             timerDisposable.dispose();
     }
 
+    private void stopLock() {
+        if (!BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
+            Log.e(TAG, "stopLock: Service is already stopped");
+            return;
+        }
+        showToast("Device is Unlocked");
+        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
+        unregisterReceiver(lockActivityBroadcastReceiver);
+        sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
+        stopTimerObserver();
+    }
+
+    private void startLock() {
+        if (BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
+            Log.e(TAG, "startLock: Service is already running");
+            return;
+        }
+        showToast("Device is Locked");
+        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
+        startLockOps();
+    }
+
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        publishForegroundServiceNotification();
+    }
+
+    public void publishForegroundServiceNotification() {
+        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        String channelId = "lockservice";
+        int notificationId = 69;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel notificationChannel = new NotificationChannel(
+                    channelId,
+                    "Productivity Service",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            notificationChannel.enableLights(true);
+            notificationChannel.enableVibration(true);
+            // Allow notifications to be visible even if Security Features are enabled
+            notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+            // NotificationManager would pipe any incoming notifications through this channel
+            notificationManager.createNotificationChannel(notificationChannel);
+        }
+
+        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, channelId)
+                .setContentTitle("Enjoy your stay, Kid!")
+                .setPriority(PRIORITY_MIN)
+                .setChannelId(channelId) // I want to go to this channel
+                .setSmallIcon(R.drawable.ic_001_rest_1); // Icon which'd appear to left of AppTitle
+
+        startForeground(notificationId, notification.build());
+    }
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(lockActivityBroadcastReceiver);
+        // What's the use of a notification, when the service behind it is about to stop
+        stopForeground(true);
+        stopSelf();
+    }
+
+    private class LocalBinder extends Binder {
+        LockService getService() {
+            return LockService.this;
+        }
+    }
+
     private void checkCurrentlyRunningAppAndLock() {
         UsageStatsManager usm = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
         long time = System.currentTimeMillis();
@@ -212,69 +293,5 @@ public class LockService extends Service {
                         }
                     }
                 });
-    }
-
-    @Override
-    public void onCreate() {
-        super.onCreate();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        publishForegroundServiceNotification();
-    }
-
-    public void publishForegroundServiceNotification() {
-        NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-        String channelId = "lockservice";
-        int notificationId = 69;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel notificationChannel = new NotificationChannel(
-                    channelId,
-                    "Productivity Service",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            notificationChannel.enableLights(true);
-            notificationChannel.enableVibration(true);
-            // Allow notifications to be visible even if Security Features are enabled
-            notificationChannel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-            // NotificationManager would pipe any incoming notifications through this channel
-            notificationManager.createNotificationChannel(notificationChannel);
-        }
-
-        NotificationCompat.Builder notification = new NotificationCompat.Builder(this, channelId)
-                .setContentTitle("Enjoy your stay, Kid!")
-                .setPriority(PRIORITY_MIN)
-                .setChannelId(channelId) // I want to go to this channel
-                .setSmallIcon(R.drawable.ic_001_rest_1); // Icon which'd appear to left of AppTitle
-
-        startForeground(notificationId, notification.build());
-    }
-
-    private void stopLock() {
-        showToast("Device is Unlocked");
-        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
-        sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
-        timerDisposable.dispose();
-    }
-
-    private void startLock() {
-        showToast("Device is Locked");
-        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
-        startLockOps();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        unregisterReceiver(lockActivityBroadcastReceiver);
-        // What's the use of a notification, when the service behind it is about to stop
-        stopForeground(true);
-        stopSelf();
-    }
-
-    private class LocalBinder extends Binder {
-        LockService getService() {
-            return LockService.this;
-        }
     }
 }
