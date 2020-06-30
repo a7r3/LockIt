@@ -25,6 +25,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -34,11 +35,12 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import nooblife.lockit.R;
 import nooblife.lockit.activities.LockActivity;
 import nooblife.lockit.database.BlacklistDatabase;
-import nooblife.lockit.model.Blacklist;
 import nooblife.lockit.util.Constants;
 import nooblife.lockit.util.LockItServer;
 import nooblife.lockit.util.Utils;
@@ -52,10 +54,15 @@ public class LockService extends Service {
     private ArrayList<String> allApplicationPackages = new ArrayList<>();
     private List<String> blackList;
     private Observable<Long> timerObservable;
-    private Observer<Long> timerObserver;
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
     private boolean isLockActivityRunning = false;
+    public static List<String> foreverLockedApps = Arrays.asList(
+            "com.google.android.packageinstaller",
+            "com.android.packageinstaller",
+            "nooblife.lockit"
+    );
+
     private BroadcastReceiver lockActivityBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -165,9 +172,9 @@ public class LockService extends Service {
         }
         showToast("Device is Unlocked");
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
-        unregisterReceiver(lockActivityBroadcastReceiver);
+//        unregisterReceiver(lockActivityBroadcastReceiver);
         sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
-        stopTimerObserver();
+//        stopTimerObserver();
     }
 
     private void startLock() {
@@ -237,49 +244,47 @@ public class LockService extends Service {
         final SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
         Observable.fromIterable(usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.from(getMainLooper()))
-                .subscribe(new Observer<UsageStats>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
+                .observeOn(Schedulers.io())
+                .doOnNext(usageStats -> mySortedMap.put(usageStats.getLastTimeUsed(), usageStats))
+                .doOnComplete(() -> {
+                    if (mySortedMap.isEmpty()) {
+                        return;
                     }
 
-                    @Override
-                    public void onNext(UsageStats usageStats) {
-                        mySortedMap.put(usageStats.getLastTimeUsed(), usageStats);
-                    }
+                    // Getting the packageName of the Application which was recently used
+                    final String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                    Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
+                    defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
+                    // TODO Show a LockActivity, but with a Auth Entry
+                    // If the currently open app is Lockit->LockActivity
+                    // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
+                    if (pkg.equals(getPackageName()) && isLockActivityRunning)
+                        return;
+                    // If the Currently open App is the Default Launcher
+                    // Don't block it
+                    if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
+                        return;
 
-                    @Override
-                    public void onError(Throwable e) {
+                    boolean isToBeBlocked = false;
 
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        if (mySortedMap != null && !mySortedMap.isEmpty()) {
-                            // Getting the packageName of the Application which was recently used
-                            final String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
-                            Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
-                            defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
-                            // TODO Show a LockActivity, but with a Auth Entry
-                            // If the currently open app is Lockit->LockActivity
-                            // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
-                            if (pkg.equals(getPackageName()) && isLockActivityRunning)
-                                return;
-                            // If the Currently open App is the Default Launcher
-                            // Don't block it
-                            if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
-                                return;
-
-                            if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
-                                Intent intent = new Intent(LockService.this, LockActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                                intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
-                                stopTimerObserver();
-                                LockService.this.startActivity(intent);
-                            }
+                    if (BlacklistDatabase.getInstance(LockService.this).blacklistDao().isServiceActive()) {
+                        if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
+                            isToBeBlocked = true;
+                        }
+                    } else {
+                        if (foreverLockedApps.contains(pkg)) {
+                            isToBeBlocked = true;
                         }
                     }
-                });
+
+                    if (isToBeBlocked) {
+                        Intent intent = new Intent(LockService.this, LockActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
+                        stopTimerObserver();
+                        LockService.this.startActivity(intent);
+                    }
+                })
+                .subscribe();
     }
 }

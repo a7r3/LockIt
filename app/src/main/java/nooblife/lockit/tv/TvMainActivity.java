@@ -21,6 +21,7 @@ import nooblife.lockit.adapter.ApplicationAdapter;
 import nooblife.lockit.database.BlacklistDatabase;
 import nooblife.lockit.model.Application;
 import nooblife.lockit.model.Blacklist;
+import nooblife.lockit.services.LockService;
 import nooblife.lockit.util.Constants;
 import nooblife.lockit.util.LockItServer;
 import nooblife.lockit.util.Utils;
@@ -76,10 +77,10 @@ public class TvMainActivity extends Activity {
 
         connectionView = findViewById(R.id.connection_view);
         connectionView.setOnClickListener(v -> {
-            if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID)) {
+//            if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID)) {
                 lockItServer.start();
                 bsd.show();
-            }
+//            }
         });
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
@@ -105,7 +106,7 @@ public class TvMainActivity extends Activity {
             }
 
             // Well, gotta do that
-            pkgList.add(getPackageName());
+            pkgList.addAll(LockService.foreverLockedApps);
 
             BlacklistDatabase.getInstance(TvMainActivity.this).blacklistDao().createBlacklist(new Blacklist(pkgList));
             Utils.startLockService(TvMainActivity.this);
@@ -113,12 +114,9 @@ public class TvMainActivity extends Activity {
         });
 
         resetOptions = findViewById(R.id.reset);
-        resetOptions.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Utils.applyBlacklistData(TvMainActivity.this, applications);
-                adapter.notifyDataSetChanged();
-            }
+        resetOptions.setOnClickListener(v -> {
+            Utils.applyBlacklistData(TvMainActivity.this, applications);
+            adapter.notifyDataSetChanged();
         });
 
         selectAll = findViewById(R.id.select_all);

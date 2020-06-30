@@ -21,7 +21,6 @@ import java.net.Socket;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
@@ -32,7 +31,7 @@ public class LockItServer {
     ServerSocket serverSocket;
     Disposable registerDisposable;
     private int serverPort = -1;
-    private LockState currentLockState;
+    private boolean isLocked;
     private ServerEventListener listener;
     private Context context;
     private boolean isRunning;
@@ -46,14 +45,14 @@ public class LockItServer {
     private LockItServer(Context context, ServerEventListener serverEventListener) {
         this.context = context;
         this.listener = serverEventListener;
-        this.currentLockState = LockState.LOCKED;
+        this.isLocked = false;
         this.isRunning = false;
         this.isInPairingMode = false;
     }
 
     private LockItServer(Context context) {
         this.context = context;
-        this.currentLockState = LockState.LOCKED;
+        this.isLocked = false;
         this.isRunning = false;
         this.isInPairingMode = false;
     }
@@ -116,11 +115,11 @@ public class LockItServer {
 
                     String action = reader.readLine();
                     Log.i(TAG, "Server: Client says: " + action);
-                    if (action.equals("lock") && currentLockState != LockState.LOCKED) {
-                        currentLockState = LockState.LOCKED;
+                    if (action.equals("lock") && !isLocked) {
+                        isLocked = true;
                         if (onLockEventListener != null) onLockEventListener.onLock();
-                    } else if (action.equals("unlock") && currentLockState != LockState.UNLOCKED) {
-                        currentLockState = LockState.UNLOCKED;
+                    } else if (action.equals("unlock") && isLocked) {
+                        isLocked = false;
                         if (onUnlockEventListener != null) onUnlockEventListener.onUnlock();
                     } else if (action.equals("pair")) {
                         String dedicatedServiceId = UUID.randomUUID().toString();
@@ -157,7 +156,7 @@ public class LockItServer {
 
         registerDisposable = rx2Dnssd.register(bs)
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
                 .subscribe(bonjourService -> {
                     Log.i(TAG, "DNSSD Service: Registered @ " + bonjourService.getRegType());
                     isRunning = true;
@@ -176,10 +175,6 @@ public class LockItServer {
         } finally {
             isRunning = false;
         }
-    }
-
-    enum LockState {
-        LOCKED, UNLOCKED
     }
 
     @FunctionalInterface

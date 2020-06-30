@@ -16,6 +16,7 @@ import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
+import io.reactivex.Scheduler;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -61,7 +62,7 @@ public class Utils {
 
         Observable.fromIterable(pm.queryIntentActivities(mainIntent, 0))
                 .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+                .observeOn(Schedulers.io())
                 .subscribe(new Observer<ResolveInfo>() {
                     @Override
                     public void onSubscribe(Disposable d) {
