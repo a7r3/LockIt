@@ -29,6 +29,7 @@ Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in
 ## Issues / TODO
 
 * Let's face the truth: Kids are intelligent enough to remove the app (Android TV doesn't have Device Administrator Service, so we're vulnerable to uninstallation)
+  - PackageInstaller is blocked now, gotta make it operable (to allow user to uninstall if insisted)
 
 * Issue when the remote locker device is lost OR the the remote locker app is uninstalled
   - How to get back in the system? Something to think on
