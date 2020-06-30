@@ -135,7 +135,7 @@ public class TvMainActivity extends Activity {
             @Override
             public void onComplete(List<Application> applications) {
                 TvMainActivity.this.applications.addAll(Utils.applyBlacklistData(TvMainActivity.this, applications));
-                appList.setAdapter(adapter);
+                runOnUiThread(() -> appList.setAdapter(adapter));
             }
         });
     }

@@ -96,7 +96,7 @@ public class LockService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
 
-            if (intent.getAction().equalsIgnoreCase(Constants.ACTION_RESTART_LOCKSERVICE)) {
+            if (intent.getAction().equalsIgnoreCase(getPackageName() + Constants.ACTION_RESTART_LOCKSERVICE)) {
                 Log.d(TAG, "onStartCommand: called on BOOT_COMPLETED broadcast");
                 Log.d(TAG, "onStartCommand: Checking if service was running on last boot");
                 boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive();
@@ -104,9 +104,8 @@ public class LockService extends Service {
                     Log.d(TAG, "onStartCommand: Destroying Service: since it wasn't running on last boot");
                     LockService.this.onDestroy();
                     return START_NOT_STICKY;
-                } else {
-                    BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
                 }
+                BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
             }
 
             Log.d(TAG, "onStartCommand: Initializing LockIt Server");
