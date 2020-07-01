@@ -29,6 +29,7 @@ import nooblife.lockit.util.Utils;
 public class TvMainActivity extends Activity {
 
     private final String TAG = getClass().getSimpleName();
+
     ArrayList<Application> applications = new ArrayList<>();
     RecyclerView appList;
     ApplicationAdapter adapter;

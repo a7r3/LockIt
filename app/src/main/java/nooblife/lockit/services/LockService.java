@@ -51,18 +51,13 @@ public class LockService extends Service {
 
     private final String TAG = getClass().getSimpleName();
     private final IBinder binder = new LocalBinder();
+
     private ArrayList<String> allApplicationPackages = new ArrayList<>();
     private List<String> blackList;
     private Observable<Long> timerObservable;
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
     private boolean isLockActivityRunning = false;
-    public static List<String> foreverLockedApps = Arrays.asList(
-            "com.google.android.packageinstaller",
-            "com.android.packageinstaller",
-            "nooblife.lockit"
-    );
-
     private BroadcastReceiver lockActivityBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -80,11 +75,11 @@ public class LockService extends Service {
         }
     };
 
-    private void showToast(final String text) {
-        new Handler(Looper.getMainLooper()).post(() ->
-                Toast.makeText(LockService.this, text, Toast.LENGTH_LONG).show()
-        );
-    }
+    public static List<String> foreverLockedApps = Arrays.asList(
+            "com.google.android.packageinstaller",
+            "com.android.packageinstaller",
+            "nooblife.lockit"
+    );
 
     @Nullable
     @Override
@@ -119,6 +114,16 @@ public class LockService extends Service {
         }
 
         return START_NOT_STICKY;
+    }
+
+    private void startLock() {
+        if (BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
+            Log.e(TAG, "startLock: Service is already running");
+            return;
+        }
+        showToast("Device is Locked");
+        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
+        startLockOps();
     }
 
     private void startLockOps() {
@@ -159,11 +164,63 @@ public class LockService extends Service {
         );
     }
 
+    private void checkCurrentlyRunningAppAndLock() {
+        UsageStatsManager usm = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
+        long time = System.currentTimeMillis();
+        final SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
+        Observable.fromIterable(usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time))
+                .subscribeOn(Schedulers.io())
+                .observeOn(Schedulers.io())
+                .doOnNext(usageStats -> mySortedMap.put(usageStats.getLastTimeUsed(), usageStats))
+                .doOnComplete(() -> {
+                    if (mySortedMap.isEmpty())
+                        return;
+
+                    // Getting the packageName of the Application which was recently used
+                    final String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
+                    Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
+                    defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
+                    // TODO Show a LockActivity, but with a Auth Entry
+                    // If the currently open app is Lockit->LockActivity
+                    // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
+                    if (pkg.equals(getPackageName()) && isLockActivityRunning)
+                        return;
+                    // If the Currently open App is the Default Launcher
+                    // Don't block it
+                    if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
+                        return;
+
+                    boolean isToBeBlocked = false;
+
+                    if (BlacklistDatabase.getInstance(LockService.this).blacklistDao().isServiceActive()) {
+                        if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
+                            isToBeBlocked = true;
+                        }
+                    } else {
+                        if (foreverLockedApps.contains(pkg)) {
+                            isToBeBlocked = true;
+                        }
+                    }
+
+                    if (isToBeBlocked) {
+                        Intent intent = new Intent(LockService.this, LockActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
+                        stopTimerObserver();
+                        LockService.this.startActivity(intent);
+                    }
+                })
+                .subscribe();
+    }
+
+    // Timer will be stopped when LockActivity is open
     private void stopTimerObserver() {
         if (timerDisposable != null && !timerDisposable.isDisposed())
             timerDisposable.dispose();
     }
 
+    // LockActivity Instance closed
+    // Service declared inactive
     private void stopLock() {
         if (!BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
             Log.e(TAG, "stopLock: Service is already stopped");
@@ -171,21 +228,10 @@ public class LockService extends Service {
         }
         showToast("Device is Unlocked");
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
-//        unregisterReceiver(lockActivityBroadcastReceiver);
+        // unregisterReceiver(lockActivityBroadcastReceiver);
         sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
-//        stopTimerObserver();
+        // stopTimerObserver();
     }
-
-    private void startLock() {
-        if (BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
-            Log.e(TAG, "startLock: Service is already running");
-            return;
-        }
-        showToast("Device is Locked");
-        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
-        startLockOps();
-    }
-
 
     @Override
     public void onCreate() {
@@ -237,53 +283,9 @@ public class LockService extends Service {
         }
     }
 
-    private void checkCurrentlyRunningAppAndLock() {
-        UsageStatsManager usm = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
-        long time = System.currentTimeMillis();
-        final SortedMap<Long, UsageStats> mySortedMap = new TreeMap<>();
-        Observable.fromIterable(usm.queryUsageStats(UsageStatsManager.INTERVAL_DAILY, time - 1000 * 1000, time))
-                .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.io())
-                .doOnNext(usageStats -> mySortedMap.put(usageStats.getLastTimeUsed(), usageStats))
-                .doOnComplete(() -> {
-                    if (mySortedMap.isEmpty()) {
-                        return;
-                    }
-
-                    // Getting the packageName of the Application which was recently used
-                    final String pkg = mySortedMap.get(mySortedMap.lastKey()).getPackageName();
-                    Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
-                    defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
-                    // TODO Show a LockActivity, but with a Auth Entry
-                    // If the currently open app is Lockit->LockActivity
-                    // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
-                    if (pkg.equals(getPackageName()) && isLockActivityRunning)
-                        return;
-                    // If the Currently open App is the Default Launcher
-                    // Don't block it
-                    if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
-                        return;
-
-                    boolean isToBeBlocked = false;
-
-                    if (BlacklistDatabase.getInstance(LockService.this).blacklistDao().isServiceActive()) {
-                        if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
-                            isToBeBlocked = true;
-                        }
-                    } else {
-                        if (foreverLockedApps.contains(pkg)) {
-                            isToBeBlocked = true;
-                        }
-                    }
-
-                    if (isToBeBlocked) {
-                        Intent intent = new Intent(LockService.this, LockActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
-                        stopTimerObserver();
-                        LockService.this.startActivity(intent);
-                    }
-                })
-                .subscribe();
+    private void showToast(final String text) {
+        new Handler(Looper.getMainLooper()).post(() ->
+                Toast.makeText(LockService.this, text, Toast.LENGTH_LONG).show()
+        );
     }
 }

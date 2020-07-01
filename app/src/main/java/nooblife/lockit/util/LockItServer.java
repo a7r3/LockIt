@@ -26,7 +26,6 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LockItServer {
 
-    private static LockItServer instance;
     public final String TAG = getClass().getSimpleName();
     ServerSocket serverSocket;
     Disposable registerDisposable;
@@ -36,6 +35,8 @@ public class LockItServer {
     private Context context;
     private boolean isRunning;
     private boolean isInPairingMode;
+
+    private static LockItServer instance;
 
     private OnPairEventListener onPairEventListener;
     private OnLockEventListener onLockEventListener;
@@ -84,18 +85,6 @@ public class LockItServer {
     public LockItServer onUnlock(OnUnlockEventListener listener) {
         this.onUnlockEventListener = listener;
         return this;
-    }
-
-    private String getServiceId() {
-        return String.format(Constants.LOCKIT_SERVICE_TEMPLATE,
-                isInPairingMode
-                        ? Constants.LOCKIT_DEFAULT_SERVICE_ID
-                        : PreferenceManager.getDefaultSharedPreferences(context)
-                        .getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID));
-    }
-
-    private void setInPairingMode() {
-        isInPairingMode = true;
     }
 
     public void start() {
@@ -175,6 +164,18 @@ public class LockItServer {
         } finally {
             isRunning = false;
         }
+    }
+
+    private String getServiceId() {
+        return String.format(Constants.LOCKIT_SERVICE_TEMPLATE,
+                isInPairingMode
+                        ? Constants.LOCKIT_DEFAULT_SERVICE_ID
+                        : PreferenceManager.getDefaultSharedPreferences(context)
+                        .getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID));
+    }
+
+    private void setInPairingMode() {
+        isInPairingMode = true;
     }
 
     @FunctionalInterface
