@@ -34,6 +34,8 @@ Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in
 * Issue when the remote locker device is lost OR the the remote locker app is uninstalled
   - How to get back in the system? Something to think on
 
+* Authentication
+
 * [FEATURE] TV App listing in the remote control phone itself. It would remove need of a frontend for TV, we can just package the server, and a minimal UI to provide info and get things started.
 
 * Manage Disconnection Failures
@@ -57,8 +59,6 @@ Now, coming to Android TVs, popular App Lock solutions require to enter a PIN in
 > * **Moved to [Rx2DNSSD](https://github.com/andriydruk/RxDNSSD) + TCP Sockets (Server)**
 > 
 > Interaction with mdnsd works, App's informed about it, Discovery and Connection takes a few ms! Safe to say we've reached the peak.
-
-* ~Authentication~ Basic done
 
 * ~Manage Permissions~ Not required in current implementation
 
