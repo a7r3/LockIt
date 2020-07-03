@@ -268,11 +268,13 @@ public class LockService extends Service {
 
         startForeground(notificationId, notification.build());
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
         unregisterReceiver(lockActivityBroadcastReceiver);
         // What's the use of a notification, when the service behind it is about to stop
+        LockItServer.initialize(this).stop();
         stopForeground(true);
         stopSelf();
     }

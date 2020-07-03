@@ -90,6 +90,7 @@ public class LockItServer {
     public void start() {
         Executors.newSingleThreadExecutor().execute(() -> {
             try {
+                isLocked = true;
                 serverSocket = new ServerSocket(0, 1, InetAddress.getByName("0.0.0.0"));
                 Log.i(TAG, "Server: Started @ " + serverSocket.getInetAddress() + ":" + serverSocket.getLocalPort());
                 serverPort = serverSocket.getLocalPort();
@@ -116,11 +117,10 @@ public class LockItServer {
                         PreferenceManager.getDefaultSharedPreferences(context)
                                 .edit().putString(Constants.PREF_LOCKIT_RC_SERVICE_ID, dedicatedServiceId).apply();
                         if (onPairEventListener != null) onPairEventListener.onPair();
+                    } else if (action.equals("connect")) {
+                        writer.println(isLocked);
                     } else {
                         writer.println("failed");
-                        reader.close();
-                        socket.close();
-                        continue;
                     }
 
                     writer.flush();
@@ -168,10 +168,7 @@ public class LockItServer {
 
     private String getServiceId() {
         return String.format(Constants.LOCKIT_SERVICE_TEMPLATE,
-                isInPairingMode
-                        ? Constants.LOCKIT_DEFAULT_SERVICE_ID
-                        : PreferenceManager.getDefaultSharedPreferences(context)
-                        .getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID));
+                Constants.LOCKIT_DEFAULT_SERVICE_ID);
     }
 
     private void setInPairingMode() {
