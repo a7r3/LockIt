@@ -98,7 +98,7 @@ public class LockService extends Service {
                 if (!hasToBeRestarted) {
                     Log.d(TAG, "onStartCommand: Destroying Service: since it wasn't running on last boot");
                     LockService.this.onDestroy();
-                    return START_NOT_STICKY;
+                    return START_STICKY;
                 }
                 BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
             }
@@ -113,7 +113,7 @@ public class LockService extends Service {
             startLock();
         }
 
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
     private void startLock() {
