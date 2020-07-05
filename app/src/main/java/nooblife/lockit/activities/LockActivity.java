@@ -35,6 +35,7 @@ public class LockActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         Utils.exitToLauncher(this);
+        finish();
     }
 
     @Override
