@@ -1,5 +1,6 @@
 package nooblife.lockit.activities;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +18,7 @@ import nooblife.lockit.R;
 import nooblife.lockit.util.Constants;
 import nooblife.lockit.util.Utils;
 
-public class LockActivity extends AppCompatActivity {
+public class LockActivity extends Activity {
 
     private TextView applicationName;
     private ImageView applicationIcon;

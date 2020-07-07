@@ -14,13 +14,17 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="LockTheme" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="LockTheme" parent="Theme.Leanback">
         <item name="android:statusBarColor">@color/colorPrimaryDark</item>
         <item name="android:windowEnterAnimation">@null</item>
         <item name="android:windowExitAnimation">@null</item>
         <item name="android:windowExitTransition">@null</item>
         <item name="android:windowEnterTransition">@null</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/background_la</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
     </style>
 
 </resources>

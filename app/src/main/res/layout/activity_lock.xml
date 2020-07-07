@@ -5,9 +5,10 @@
     android:layout_height="match_parent">
 
     <FrameLayout
+        android:id="@+id/frameLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:alpha="0.3"
+        android:alpha="0.7"
         android:background="@drawable/tv_main_gradient"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -19,6 +20,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.95"
+        app:layout_constraintHorizontal_bias="0.10"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -45,24 +48,27 @@
         android:id="@+id/text_error_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
         android:gravity="center"
         android:padding="8dp"
         android:text="Shhh!"
+        android:layout_marginStart="8dp"
         android:textColor="#FFF"
         android:textSize="28sp"
         android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toTopOf="@id/text_error_desc"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:layout_constraintStart_toEndOf="@id/application_icon_group"
+        app:layout_constraintTop_toTopOf="@+id/application_icon_group" />
 
     <LinearLayout
+        android:id="@+id/text_error_desc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_error_header">
+        android:paddingHorizontal="16dp"
+        app:layout_constraintStart_toEndOf="@id/application_icon_group"
+        app:layout_constraintTop_toBottomOf="@id/text_error_header"
+        app:layout_constraintBottom_toBottomOf="@id/application_icon_group">
 
         <TextView
             android:id="@+id/text_error_content"
@@ -70,7 +76,7 @@
             android:layout_height="wrap_content"
             android:text="{app}"
             android:textColor="#FFF"
-            android:textSize="18sp"
+            android:textSize="24sp"
             android:textStyle="bold|italic" />
 
         <TextView
@@ -79,7 +85,7 @@
             android:layout_height="wrap_content"
             android:text=" is taking a nap"
             android:textColor="#FFF"
-            android:textSize="18sp" />
+            android:textSize="24sp" />
 
     </LinearLayout>
 
@@ -92,22 +98,28 @@
         android:textColor="#FFF"
         android:textSize="18sp"
         android:textStyle="bold"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/application_icon_group" />
 
-    <com.google.android.material.button.MaterialButton
+    <TextView
         android:id="@+id/exit_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/colorAccent"
+        android:background="@drawable/normal_button_state"
         android:focusedByDefault="true"
-        android:text="Let It Sleep"
+        android:text="Leave app"
+        android:focusable="true"
+        android:gravity="center"
+        android:padding="16dp"
         android:textAllCaps="true"
-        android:textColor="#FFF"
+        android:textColor="@color/colorAccent"
+        android:textSize="20sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/question" />
+        android:layout_marginEnd="48dp"
+        app:layout_constraintTop_toTopOf="@id/application_icon_group"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
