@@ -27,4 +27,12 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
+    <style name="ConnectTheme" parent="Theme.Leanback">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/background_la</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
 </resources>

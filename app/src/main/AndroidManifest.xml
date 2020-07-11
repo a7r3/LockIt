@@ -52,6 +52,8 @@
             android:theme="@style/LockTheme" />
         <activity android:name=".activities.ProfileCreationActivity" />
         <activity android:name=".activities.PostLockdownActivity" />
+        <activity android:name=".activities.ConnectActivity"
+            android:theme="@style/ConnectTheme" />
 
         <service
             android:name=".services.LockService"

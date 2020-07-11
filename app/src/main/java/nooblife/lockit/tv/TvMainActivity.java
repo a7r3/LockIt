@@ -1,6 +1,7 @@
 package nooblife.lockit.tv;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -17,11 +18,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nooblife.lockit.R;
+import nooblife.lockit.activities.ConnectActivity;
 import nooblife.lockit.adapter.ApplicationAdapter;
 import nooblife.lockit.database.BlacklistDatabase;
 import nooblife.lockit.model.Application;
 import nooblife.lockit.model.Blacklist;
-import nooblife.lockit.services.LockService;
 import nooblife.lockit.util.Constants;
 import nooblife.lockit.util.LockItServer;
 import nooblife.lockit.util.Utils;
@@ -37,7 +38,20 @@ public class TvMainActivity extends Activity {
     private SharedPreferences sharedPreferences;
     private String serviceId;
     private LockItServer lockItServer;
-    private BottomSheetDialog bsd;
+    public static int CONNECT_ACTIVITY_RQ = 128;
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CONNECT_ACTIVITY_RQ) {
+            String status = "complete";
+            if (resultCode == RESULT_OK)
+                serviceId = sharedPreferences.getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID);
+            else
+                status = "failed";
+            Toast.makeText(TvMainActivity.this, "Pairing " + status + "!", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,38 +63,10 @@ public class TvMainActivity extends Activity {
         appList.setLayoutManager(layoutManager);
         adapter = new ApplicationAdapter(this, applications, R.layout.app_item);
 
-        bsd = new BottomSheetDialog(TvMainActivity.this, R.style.Theme_Design_BottomSheetDialog) {
-            @Override
-            protected void onCreate(Bundle savedInstanceState) {
-                super.onCreate(savedInstanceState);
-                setContentView(R.layout.dialog_connect);
-                View cancel = findViewById(R.id.connect_cancel);
-                cancel.setOnClickListener(v1 -> {
-                    lockItServer.stop();
-                    cancel();
-                });
-            }
-
-            @Override
-            protected void onStop() {
-                lockItServer.stop();
-            }
-        };
-        bsd.setCancelable(true);
-
-        lockItServer = LockItServer.initialize(this)
-                .onPair(() -> {
-                    serviceId = sharedPreferences.getString(Constants.PREF_LOCKIT_RC_SERVICE_ID, Constants.LOCKIT_DEFAULT_SERVICE_ID);
-                    bsd.cancel();
-                });
-
-        lockItServer.start();
-
         connectionView = findViewById(R.id.connection_view);
         connectionView.setOnClickListener(v -> {
 //            if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID)) {
-                lockItServer.start();
-                bsd.show();
+            startActivityForResult(new Intent(TvMainActivity.this, ConnectActivity.class), CONNECT_ACTIVITY_RQ);
 //            }
         });
 
