@@ -106,9 +106,6 @@ public class TvMainActivity extends Activity {
                 pkgList.add(a.getApplicationPackageName());
             }
 
-            // Well, gotta do that
-            pkgList.addAll(LockService.foreverLockedApps);
-
             BlacklistDatabase.getInstance(TvMainActivity.this).blacklistDao().createBlacklist(new Blacklist(pkgList));
             Utils.startLockService(TvMainActivity.this);
             finish();

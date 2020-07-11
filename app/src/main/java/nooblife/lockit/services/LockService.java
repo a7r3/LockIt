@@ -76,6 +76,7 @@ public class LockService extends Service {
     public static List<String> foreverLockedApps = Arrays.asList(
             "com.google.android.packageinstaller",
             "com.android.packageinstaller",
+            "com.android.tv.settings",
             "nooblife.lockit"
     );
 
@@ -192,12 +193,10 @@ public class LockService extends Service {
 
         boolean isToBeBlocked = false;
 
-        if (BlacklistDatabase.getInstance(LockService.this).blacklistDao().isServiceActive()) {
+        if (foreverLockedApps.contains(pkg)) {
+            isToBeBlocked = true;
+        } else if (BlacklistDatabase.getInstance(LockService.this).blacklistDao().isServiceActive()) {
             if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
-                isToBeBlocked = true;
-            }
-        } else {
-            if (foreverLockedApps.contains(pkg)) {
                 isToBeBlocked = true;
             }
         }
