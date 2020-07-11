@@ -146,7 +146,7 @@ public class LockService extends Service {
                             .getPackageList();
 
                     timerObservable = Observable
-                            .interval(0, 1L, TimeUnit.SECONDS)
+                            .interval(0, 100L, TimeUnit.MILLISECONDS)
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io());
 
