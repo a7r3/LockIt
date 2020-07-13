@@ -8,11 +8,13 @@ import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.transition.TransitionManager;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 
 import nooblife.lockit.R;
 import nooblife.lockit.util.Constants;
@@ -22,9 +24,11 @@ public class LockActivity extends Activity {
 
     private TextView applicationName;
     private ImageView applicationIcon;
-    private TextView exitButton;
+    private TextView toggleTemporaryUnlockRequest;
     private String applicationPkg;
     private ApplicationInfo info;
+    private View temporaryUnlockDialog;
+    private boolean isTemporaryUnlockRequested = false;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -43,7 +47,9 @@ public class LockActivity extends Activity {
     protected void onDestroy() {
         unregisterReceiver(receiver);
         // Resume the Timer
-        sendBroadcast(new Intent(Constants.ACTION_RESUME_TIMERTASK));
+        Intent intent = new Intent(Constants.ACTION_RESUME_TIMERTASK);
+        intent.putExtra(Constants.EXTRA_TEMPORARY_UNLOCK_REQUESTED, isTemporaryUnlockRequested);
+        sendBroadcast(intent);
         super.onDestroy();
     }
 
@@ -98,9 +104,20 @@ public class LockActivity extends Activity {
 
         applicationName = findViewById(R.id.text_error_content);
         applicationIcon = findViewById(R.id.application_icon);
-        exitButton = findViewById(R.id.exit_button);
+        toggleTemporaryUnlockRequest = findViewById(R.id.temp_unlock_request_button);
+        temporaryUnlockDialog = findViewById(R.id.temp_unlock_dialog);
 
-        exitButton.setOnClickListener(v -> LockActivity.this.onBackPressed());
+        toggleTemporaryUnlockRequest.setOnClickListener(v -> {
+            TransitionManager.beginDelayedTransition((ViewGroup) getWindow().getDecorView());
+            if (!isTemporaryUnlockRequested) {
+                temporaryUnlockDialog.setVisibility(View.VISIBLE);
+                toggleTemporaryUnlockRequest.setText("Cancel");
+            } else {
+                temporaryUnlockDialog.setVisibility(View.GONE);
+                toggleTemporaryUnlockRequest.setText("Unlock for once");
+            }
+            isTemporaryUnlockRequested = !isTemporaryUnlockRequested;
+        });
 
         applyLockedAppDetails(getIntent());
     }

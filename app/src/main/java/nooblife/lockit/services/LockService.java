@@ -5,7 +5,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.app.usage.UsageEvents;
-import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -29,8 +28,6 @@ import androidx.preference.PreferenceManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -56,6 +53,10 @@ public class LockService extends Service {
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
     private boolean isLockActivityRunning = false;
+    // If a user unlocks a foreverLockedApp, the lock mechanism will be bypassed
+    // until the user moves out of that foreverLockedApp
+    private boolean isInTemporaryUnlockMode = false;
+    private String packageInTemporaryUnlock = "";
     private BroadcastReceiver lockActivityBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -65,8 +66,30 @@ public class LockService extends Service {
                         isLockActivityRunning = intent.getBooleanExtra(Constants.EXTRA_IS_LOCKACTIVITY_ONTOP, true);
                         break;
                     case Constants.ACTION_RESUME_TIMERTASK:
-                        if (BlacklistDatabase.getInstance(context).blacklistDao().isServiceActive())
-                            startTimerObserver();
+                        if (intent.getBooleanExtra(Constants.EXTRA_TEMPORARY_UNLOCK_REQUESTED, false)) {
+                            isInTemporaryUnlockMode = true;
+                            startLock();
+                        } else if (BlacklistDatabase.getInstance(context).blacklistDao().isServiceActive())
+                            startOrResumeTimer();
+                        break;
+                }
+            }
+        }
+    };
+    // Flip this to 'true' if you want to test this in emulator
+    // Broadcast intents as mentioned in the below receiver to Lock/Unlock from ADB AM Broadcasts.
+    // SHOULD BE FALSE FOR ACTUAL TESTS
+    private final boolean receiveDebugBroadcasts = true;
+    private BroadcastReceiver debugCommandReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() != null) {
+                switch(intent.getAction()) {
+                    case Constants.DEBUG_LOCKSERVICE_START:
+                        startLock();
+                        break;
+                    case Constants.DEBUG_LOCKSERVICE_STOP:
+                        stopLock();
                         break;
                 }
             }
@@ -109,31 +132,46 @@ public class LockService extends Service {
                     .start();
 
             // Lock the Device now
-            startLock();
+            coldStartLock();
         }
 
         return START_STICKY;
     }
 
-    private void startLock() {
+    // Initial preparations before locking/unlocking normally
+    // Only called when LockService is just started
+    private void coldStartLock() {
         if (BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
             Log.e(TAG, "startLock: Service is already running");
             return;
         }
-        showToast("Device is Locked");
-        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
-        startLockOps();
-    }
-
-    private void startLockOps() {
-        Log.d(TAG, "startLockOps: Started Lock Service");
-
         Utils.exitToLauncher(this);
-
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_RESUME_TIMERTASK);
         filter.addAction(Constants.ACTION_LOCKACTIVITY_STATUSREPORT);
         registerReceiver(lockActivityBroadcastReceiver, filter);
+
+        if (receiveDebugBroadcasts) {
+            IntentFilter debugCommandFilter = new IntentFilter();
+            debugCommandFilter.addAction(Constants.DEBUG_LOCKSERVICE_START);
+            debugCommandFilter.addAction(Constants.DEBUG_LOCKSERVICE_STOP);
+            registerReceiver(debugCommandReceiver, debugCommandFilter);
+        }
+        startLock();
+    }
+
+    // Just start the lock without the initial setup (for Temporary Unlocks ONLY)
+    private void startLock() {
+        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
+        String message = isInTemporaryUnlockMode
+                ? "Device will be locked again once you leave the current App"
+                : "Device is Locked";
+        showToast(message);
+        loadInstalledAppsAndStartTimer();
+    }
+
+    private void loadInstalledAppsAndStartTimer() {
+        Log.d(TAG, "startLockOps: Started Lock Service");
 
         Observable.fromIterable(getPackageManager().getInstalledApplications(PackageManager.GET_META_DATA))
                 .subscribeOn(Schedulers.io())
@@ -151,13 +189,14 @@ public class LockService extends Service {
                             .subscribeOn(Schedulers.io())
                             .observeOn(Schedulers.io());
 
-                    startTimerObserver();
+                    startOrResumeTimer();
 
                 }).subscribe();
 
     }
 
-    private void startTimerObserver() {
+    private void startOrResumeTimer() {
+        pauseTimer();
         timerDisposable = timerObservable.subscribe(
                 next -> checkCurrentlyRunningAppAndLock(),
                 Throwable::printStackTrace
@@ -181,11 +220,30 @@ public class LockService extends Service {
         final String pkg = event.getPackageName();
         Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
         defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
-        // TODO Show a LockActivity, but with a Auth Entry
         // If the currently open app is Lockit->LockActivity
         // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
-        if (pkg.equals(getPackageName()) && isLockActivityRunning)
+        if (pkg.equals(getPackageName()) && isLockActivityRunning) {
             return;
+        }
+
+        // Temporary Unlock Core Logic
+        if (isInTemporaryUnlockMode) {
+            if (packageInTemporaryUnlock.isEmpty()) {
+                // Getting the temporarily unlocked package
+                packageInTemporaryUnlock = pkg;
+                return;
+            }
+            if (!packageInTemporaryUnlock.equals(pkg)) {
+                // Moved out of ForeverLockedApp? Back to normal!
+                isInTemporaryUnlockMode = false;
+                packageInTemporaryUnlock = "";
+            } else {
+                // Still inside the temporarily unlocked app
+                // Don't lock
+                return;
+            }
+        }
+
         // If the Currently open App is the Default Launcher
         // Don't block it
         if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
@@ -205,19 +263,18 @@ public class LockService extends Service {
             Intent intent = new Intent(LockService.this, LockActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
             intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
-            stopTimerObserver();
+            pauseTimer();
             LockService.this.startActivity(intent);
         }
     }
 
-    // Timer will be stopped when LockActivity is open
-    private void stopTimerObserver() {
+    // Timer will be paused (no foreground activity checking) when LockActivity is open
+    private void pauseTimer() {
         if (timerDisposable != null && !timerDisposable.isDisposed())
             timerDisposable.dispose();
     }
 
-    // LockActivity Instance closed
-    // Service declared inactive
+    // timer will run only for foreverLockedApps (not for user-specified apps)
     private void stopLock() {
         if (!BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
             Log.e(TAG, "stopLock: Service is already stopped");
@@ -227,7 +284,6 @@ public class LockService extends Service {
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
         // unregisterReceiver(lockActivityBroadcastReceiver);
         sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
-        // stopTimerObserver();
     }
 
     @Override

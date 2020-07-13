@@ -10,4 +10,7 @@ public class Constants {
     public static final String ACTION_RESUME_TIMERTASK = "nooblife.lockit.ACTION_RESUME_TIMERTASK";
     public static final String ACTION_LOCKACTIVITY_STATUSREPORT = "nooblife.lockit.ACTION_LOCKACTIVITY_STATUSREPORT";
     public static final String EXTRA_IS_LOCKACTIVITY_ONTOP = "nooblife.lockit.extras.LOCKACTIVITY_ONTOP";
+    public static final String DEBUG_LOCKSERVICE_STOP = "nooblife.lockit.DEBUG_LOCKSERVICE_STOP";
+    public static final String DEBUG_LOCKSERVICE_START = "nooblife.lockit.DEBUG_LOCKSERVICE_START";
+    public static final String EXTRA_TEMPORARY_UNLOCK_REQUESTED = "nooblife.lockit.EXTRA_TEMPORARY_UNLOCK_REQUESTED";
 }

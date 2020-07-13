@@ -104,12 +104,12 @@
         app:layout_constraintTop_toBottomOf="@id/application_icon_group" />
 
     <TextView
-        android:id="@+id/exit_button"
+        android:id="@+id/temp_unlock_request_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/primary_button_state"
         android:focusedByDefault="true"
-        android:text="Leave app"
+        android:text="Unlock for once"
         android:gravity="center"
         android:padding="16dp"
         android:textAllCaps="true"
@@ -120,5 +120,54 @@
         android:layout_marginEnd="48dp"
         app:layout_constraintTop_toTopOf="@id/application_icon_group"
         app:layout_constraintBottom_toBottomOf="parent" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/temp_unlock_dialog"
+        android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:cardBackgroundColor="@color/cardview_dark_background">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:padding="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ProgressBar
+                android:id="@+id/progress"
+                android:indeterminateTint="@color/colorAccent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"/>
+
+            <TextView
+                app:layout_constraintStart_toEndOf="@id/progress"
+                app:layout_constraintTop_toTopOf="parent"
+                android:id="@+id/title"
+                android:layout_marginStart="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Waiting for Unlock Command"
+                android:textSize="20sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/desc"
+                app:layout_constraintTop_toBottomOf="@id/title"
+                app:layout_constraintStart_toStartOf="@id/title"
+                android:layout_marginTop="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Use WiLock from your phone to unlock one-time use of this app"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
