@@ -262,7 +262,7 @@ public class LockService extends Service {
         if (isToBeBlocked) {
             Intent intent = new Intent(LockService.this, LockActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            intent.putExtra(Constants.EXTRA_LOCKED_APP_PACKAGE_NAME, pkg);
+            intent.putExtra(Constants.EXTRA_LOCKED_PKGNAME, pkg);
             pauseTimer();
             LockService.this.startActivity(intent);
         }
