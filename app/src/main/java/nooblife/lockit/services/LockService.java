@@ -69,7 +69,7 @@ public class LockService extends Service {
                         if (intent.getBooleanExtra(Constants.EXTRA_TEMPORARY_UNLOCK_REQUESTED, false)) {
                             isInTemporaryUnlockMode = true;
                             startLock();
-                        } else if (BlacklistDatabase.getInstance(context).blacklistDao().isServiceActive())
+                        } else
                             startOrResumeTimer();
                         break;
                 }
