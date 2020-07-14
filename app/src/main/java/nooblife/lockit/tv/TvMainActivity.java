@@ -37,7 +37,6 @@ public class TvMainActivity extends Activity {
     TextView selectAll, resetOptions, startSession, connectionView;
     private SharedPreferences sharedPreferences;
     private String serviceId;
-    private LockItServer lockItServer;
     public static int CONNECT_ACTIVITY_RQ = 128;
 
     @Override

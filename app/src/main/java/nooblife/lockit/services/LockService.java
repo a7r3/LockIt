@@ -27,6 +27,7 @@ import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -47,14 +48,14 @@ public class LockService extends Service {
     private final String TAG = getClass().getSimpleName();
     private final IBinder binder = new LocalBinder();
 
-    private ArrayList<String> allApplicationPackages = new ArrayList<>();
+    private HashSet<String> allApplicationPackages = new HashSet<>();
     private List<String> blackList;
     private Observable<Long> timerObservable;
     private Disposable timerDisposable;
     private SharedPreferences sharedPreferences;
     private boolean isLockActivityRunning = false;
-    // If a user unlocks a foreverLockedApp, the lock mechanism will be bypassed
-    // until the user moves out of that foreverLockedApp
+    // If a user toggles the "Unlock for Once" switch and unlocks the TV,
+    // the lock mechanism will be bypassed until the user moves out of that app
     private boolean isInTemporaryUnlockMode = false;
     private String packageInTemporaryUnlock = "";
     private BroadcastReceiver lockActivityBroadcastReceiver = new BroadcastReceiver() {
@@ -79,7 +80,7 @@ public class LockService extends Service {
     // Flip this to 'true' if you want to test this in emulator
     // Broadcast intents as mentioned in the below receiver to Lock/Unlock from ADB AM Broadcasts.
     // SHOULD BE FALSE FOR ACTUAL TESTS
-    private final boolean receiveDebugBroadcasts = true;
+    private final boolean receiveDebugBroadcasts = false;
     private BroadcastReceiver debugCommandReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -126,7 +127,7 @@ public class LockService extends Service {
             }
 
             Log.d(TAG, "onStartCommand: Initializing LockIt Server");
-            LockItServer.initialize(this)
+            LockItServer.get(this)
                     .onLock(this::startLock)
                     .onUnlock(this::stopLock)
                     .start();
@@ -160,7 +161,7 @@ public class LockService extends Service {
         startLock();
     }
 
-    // Just start the lock without the initial setup (for Temporary Unlocks ONLY)
+    // Starting lock after initial cold start is done
     private void startLock() {
         BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
         String message = isInTemporaryUnlockMode
@@ -206,7 +207,7 @@ public class LockService extends Service {
     private void checkCurrentlyRunningAppAndLock() {
         UsageStatsManager usm = (UsageStatsManager) getSystemService(USAGE_STATS_SERVICE);
         long now = System.currentTimeMillis();
-        UsageEvents usageEvents = usm.queryEvents(now - 30 * 1000, now + (10 * 1000));
+        UsageEvents usageEvents = usm.queryEvents(now - (30 * 1000), now + (10 * 1000));
         UsageEvents.Event event = new UsageEvents.Event();
         while (usageEvents.hasNextEvent()) {
             usageEvents.getNextEvent(event);
@@ -218,8 +219,7 @@ public class LockService extends Service {
         }
 
         final String pkg = event.getPackageName();
-        Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
-        defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
+
         // If the currently open app is Lockit->LockActivity
         // Don't block it (we'd end up blocking LockActivity with another LockActivity blocking another LockActivity...)
         if (pkg.equals(getPackageName()) && isLockActivityRunning) {
@@ -246,6 +246,8 @@ public class LockService extends Service {
 
         // If the Currently open App is the Default Launcher
         // Don't block it
+        Intent defaultLauncherIntent = new Intent(Intent.ACTION_MAIN);
+        defaultLauncherIntent.addCategory(Intent.CATEGORY_HOME);
         if (pkg.equals(getPackageManager().resolveActivity(defaultLauncherIntent, PackageManager.MATCH_DEFAULT_ONLY).activityInfo.packageName))
             return;
 
@@ -327,7 +329,7 @@ public class LockService extends Service {
         super.onDestroy();
         unregisterReceiver(lockActivityBroadcastReceiver);
         // What's the use of a notification, when the service behind it is about to stop
-        LockItServer.initialize(this).stop();
+        LockItServer.get(this).stop();
         stopForeground(true);
         stopSelf();
     }

@@ -31,7 +31,6 @@ public class LockItServer {
     Disposable registerDisposable;
     private int serverPort = -1;
     private boolean isLocked;
-    private ServerEventListener listener;
     private Context context;
     private boolean isRunning;
     private boolean isInPairingMode;
@@ -42,15 +41,6 @@ public class LockItServer {
     private OnLockEventListener onLockEventListener;
     private OnUnlockEventListener onUnlockEventListener;
 
-    @Deprecated
-    private LockItServer(Context context, ServerEventListener serverEventListener) {
-        this.context = context;
-        this.listener = serverEventListener;
-        this.isLocked = false;
-        this.isRunning = false;
-        this.isInPairingMode = false;
-    }
-
     private LockItServer(Context context) {
         this.context = context;
         this.isLocked = false;
@@ -58,14 +48,7 @@ public class LockItServer {
         this.isInPairingMode = false;
     }
 
-    @Deprecated
-    public static LockItServer initialize(Context context, @NonNull ServerEventListener serverEventListener) {
-        if (instance == null)
-            instance = new LockItServer(context, serverEventListener);
-        return instance;
-    }
-
-    public static LockItServer initialize(Context context) {
+    public static LockItServer get(Context context) {
         if (instance == null)
             instance = new LockItServer(context);
         return instance;
