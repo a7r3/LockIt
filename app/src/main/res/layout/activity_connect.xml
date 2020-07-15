@@ -3,16 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingTop="48dp"
+    android:paddingVertical="48dp"
+    android:paddingHorizontal="24dp"
     android:layout_gravity="bottom"
-    android:background="@color/cardview_dark_background"
-    android:paddingBottom="48dp">
+    android:background="@color/cardview_dark_background">
 
-    <ProgressBar
+    <androidx.core.widget.ContentLoadingProgressBar
         android:id="@+id/progressbar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:theme="?android:attr/progressBarStyleLarge"
         android:indeterminateTint="@color/colorAccent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -24,11 +24,22 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:fontFamily="sans-serif-condensed"
-        android:text="Waiting for pair requests"
+        android:text="Pair your phone with this TV "
         android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintStart_toEndOf="@id/progressbar"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/connect_title_tv_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="(TV)"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-condensed"
+        app:layout_constraintTop_toTopOf="@id/connect_title"
+        app:layout_constraintStart_toEndOf="@id/connect_title"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -37,7 +48,7 @@
         android:layout_marginTop="8dp"
         android:fontFamily="sans-serif-condensed"
         android:text="Use the WiLock app in your phone to pair with this TV"
-        android:textSize="18sp"
+        android:textSize="20sp"
         app:layout_constraintStart_toEndOf="@id/progressbar"
         app:layout_constraintTop_toBottomOf="@id/connect_title" />
 
@@ -45,7 +56,6 @@
         android:id="@+id/connect_cancel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
         android:background="@drawable/normal_button_state"
         android:focusedByDefault="true"
         android:gravity="center"

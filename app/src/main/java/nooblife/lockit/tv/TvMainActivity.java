@@ -121,6 +121,10 @@ public class TvMainActivity extends Activity {
                 runOnUiThread(() -> appList.setAdapter(adapter));
             }
         });
+
+        if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID)) {
+            connectionView.performClick();
+        }
     }
 
 }
