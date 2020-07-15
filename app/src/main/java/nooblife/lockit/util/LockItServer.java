@@ -4,7 +4,6 @@ import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.github.druk.rx2dnssd.BonjourService;
@@ -20,6 +19,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.UUID;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
@@ -40,6 +41,7 @@ public class LockItServer {
     private OnPairEventListener onPairEventListener;
     private OnLockEventListener onLockEventListener;
     private OnUnlockEventListener onUnlockEventListener;
+    private OnServerCrashedListener onServerCrashedListener;
 
     private LockItServer(Context context) {
         this.context = context;
@@ -67,6 +69,11 @@ public class LockItServer {
 
     public LockItServer onUnlock(OnUnlockEventListener listener) {
         this.onUnlockEventListener = listener;
+        return this;
+    }
+
+    public LockItServer onCrash(OnServerCrashedListener listener) {
+        this.onServerCrashedListener = listener;
         return this;
     }
 
@@ -171,6 +178,11 @@ public class LockItServer {
     @FunctionalInterface
     public interface OnPairEventListener {
         void onPair();
+    }
+
+    @FunctionalInterface
+    public interface OnServerCrashedListener {
+        void onCrash();
     }
 
     @Deprecated

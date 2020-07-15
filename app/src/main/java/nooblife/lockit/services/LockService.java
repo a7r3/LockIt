@@ -25,7 +25,6 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.preference.PreferenceManager;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -52,7 +51,6 @@ public class LockService extends Service {
     private List<String> blackList;
     private Observable<Long> timerObservable;
     private Disposable timerDisposable;
-    private SharedPreferences sharedPreferences;
     private boolean isLockActivityRunning = false;
     // If a user toggles the "Unlock for Once" switch and unlocks the TV,
     // the lock mechanism will be bypassed until the user moves out of that app
@@ -80,7 +78,7 @@ public class LockService extends Service {
     // Flip this to 'true' if you want to test this in emulator
     // Broadcast intents as mentioned in the below receiver to Lock/Unlock from ADB AM Broadcasts.
     // SHOULD BE FALSE FOR ACTUAL TESTS
-    private final boolean receiveDebugBroadcasts = false;
+    private final boolean receiveDebugBroadcasts = true;
     private BroadcastReceiver debugCommandReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -100,8 +98,7 @@ public class LockService extends Service {
     public static List<String> foreverLockedApps = Arrays.asList(
             "com.google.android.packageinstaller",
             "com.android.packageinstaller",
-            "com.android.tv.settings",
-            "nooblife.lockit"
+            "com.android.tv.settings"
     );
 
     @Nullable
@@ -114,39 +111,21 @@ public class LockService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null && intent.getAction() != null) {
 
-            if (intent.getAction().equalsIgnoreCase(getPackageName() + Constants.ACTION_RESTART_LOCKSERVICE)) {
-                Log.d(TAG, "onStartCommand: called on BOOT_COMPLETED broadcast");
-                Log.d(TAG, "onStartCommand: Checking if service was running on last boot");
-                boolean hasToBeRestarted = BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive();
-                if (!hasToBeRestarted) {
-                    Log.d(TAG, "onStartCommand: Destroying Service: since it wasn't running on last boot");
-                    LockService.this.onDestroy();
-                    return START_STICKY;
-                }
-                BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
+            switch (intent.getAction()) {
+                case Constants.ACTION_RESTART_LOCKSERVICE:
+                    Utils.setLockerInactive(this);
+                    startLock();
+                    break;
+                case Constants.ACTION_START_LOCKSERVICE_FROM_UI:
+                    startLock();
+                    break;
             }
-
-            Log.d(TAG, "onStartCommand: Initializing LockIt Server");
-            LockItServer.get(this)
-                    .onLock(this::startLock)
-                    .onUnlock(this::stopLock)
-                    .start();
-
-            // Lock the Device now
-            coldStartLock();
         }
 
         return START_STICKY;
     }
 
-    // Initial preparations before locking/unlocking normally
-    // Only called when LockService is just started
-    private void coldStartLock() {
-        if (BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
-            Log.e(TAG, "startLock: Service is already running");
-            return;
-        }
-        Utils.exitToLauncher(this);
+    private void onFreshStart() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constants.ACTION_RESUME_TIMERTASK);
         filter.addAction(Constants.ACTION_LOCKACTIVITY_STATUSREPORT);
@@ -158,12 +137,16 @@ public class LockService extends Service {
             debugCommandFilter.addAction(Constants.DEBUG_LOCKSERVICE_STOP);
             registerReceiver(debugCommandReceiver, debugCommandFilter);
         }
-        startLock();
     }
 
     // Starting lock after initial cold start is done
     private void startLock() {
-        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(true);
+        if (Utils.isLockerActive(this)) {
+            Log.e(TAG, "startLock: Service is already running");
+            return;
+        }
+        Utils.setLockerActive(this);
+        if (!isInTemporaryUnlockMode) Utils.exitToLauncher(this);
         String message = isInTemporaryUnlockMode
                 ? "Device will be locked again once you leave the current App"
                 : "Device is Locked";
@@ -255,7 +238,7 @@ public class LockService extends Service {
 
         if (foreverLockedApps.contains(pkg)) {
             isToBeBlocked = true;
-        } else if (BlacklistDatabase.getInstance(LockService.this).blacklistDao().isServiceActive()) {
+        } else if (Utils.isLockerActive(LockService.this)) {
             if (blackList.contains(pkg) && allApplicationPackages.contains(pkg)) {
                 isToBeBlocked = true;
             }
@@ -278,20 +261,24 @@ public class LockService extends Service {
 
     // timer will run only for foreverLockedApps (not for user-specified apps)
     private void stopLock() {
-        if (!BlacklistDatabase.getInstance(this).blacklistDao().isServiceActive()) {
+        sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
+        if (!Utils.isLockerActive(LockService.this)) {
             Log.e(TAG, "stopLock: Service is already stopped");
             return;
         }
         showToast("Device is Unlocked");
-        BlacklistDatabase.getInstance(this).blacklistDao().setServiceActive(false);
-        // unregisterReceiver(lockActivityBroadcastReceiver);
-        sendBroadcast(new Intent(Constants.ACTION_STOP_LOCKACTIVITY));
+        Utils.setLockerInactive(LockService.this);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Log.d(TAG, "onStartCommand: Initializing LockIt Server");
+        LockItServer.get(this)
+                .onLock(this::startLock)
+                .onUnlock(this::stopLock)
+                .start();
+        onFreshStart();
         publishForegroundServiceNotification();
     }
 

@@ -1,5 +1,6 @@
 package nooblife.lockit.util;
 
+import android.app.ActivityManager;
 import android.app.UiModeManager;
 import android.content.Context;
 import android.content.Intent;
@@ -8,16 +9,16 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
+import android.util.Log;
 
 import androidx.core.content.ContextCompat;
+import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.Observer;
-import io.reactivex.Scheduler;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 import nooblife.lockit.database.BlacklistDatabase;
@@ -117,20 +118,41 @@ public class Utils {
         return applications;
     }
 
-    public static void startLockService(Context context) {
-        // This method would be either called by Remote Locker OR In-App UI
-        // So, the user explicitly calls LockService
-        startLockService(context, "");
+    public static void startLockService(Context context, String action) {
+        Intent lockServiceIntent = new Intent(context, LockService.class);
+        lockServiceIntent.setAction(action);
+        ContextCompat.startForegroundService(context, lockServiceIntent);
     }
 
-    public static void startLockService(Context context, String action) {
-        // This method is ONLY to be called by BOOT_COMPLETED broadcast receiver
-        // Service is not to be set as active here since it's not explicit
-        // Though, we'll check if the service was running on last boot, and restart it again
-        //   if that was the case
-        Intent lockServiceIntent = new Intent(context, LockService.class);
-        lockServiceIntent.setAction(context.getPackageName() + action);
-        ContextCompat.startForegroundService(context, lockServiceIntent);
+    public static boolean isLockServiceRunning(Context context) {
+        final ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
+        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
+
+        for (ActivityManager.RunningServiceInfo runningServiceInfo : services) {
+            if (runningServiceInfo.service.getClassName().equals(LockService.class.getName())){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void setLockerActive(Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putBoolean(Constants.PREF_LOCKER_ACTIVE, true)
+                .apply();
+    }
+
+    public static void setLockerInactive(Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putBoolean(Constants.PREF_LOCKER_ACTIVE, false)
+                .apply();
+    }
+
+    public static boolean isLockerActive(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(Constants.PREF_LOCKER_ACTIVE, false);
     }
 
     public static void exitToLauncher(Context context) {

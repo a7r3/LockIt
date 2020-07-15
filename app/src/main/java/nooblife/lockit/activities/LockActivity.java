@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.transition.TransitionManager;
@@ -32,6 +33,10 @@ public class LockActivity extends Activity {
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if (applicationPkg.equals(getPackageName())) {
+                isTemporaryUnlockRequested = true;
+                sendBroadcast(new Intent(Constants.ACTION_UNLOCK_MAINAPP));
+            }
             finish();
         }
     };
@@ -72,12 +77,11 @@ public class LockActivity extends Activity {
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        applyLockedAppDetails(intent);
+        applicationPkg = getIntent().getStringExtra(Constants.EXTRA_LOCKED_PKGNAME);
+        applyLockedAppDetails();
     }
 
-    private void applyLockedAppDetails(Intent intent) {
-        applicationPkg = intent.getStringExtra("APP");
-
+    private void applyLockedAppDetails() {
         try {
             info = getPackageManager().getApplicationInfo(applicationPkg, 0);
         } catch (Exception e) {
@@ -119,6 +123,13 @@ public class LockActivity extends Activity {
             isTemporaryUnlockRequested = !isTemporaryUnlockRequested;
         });
 
-        applyLockedAppDetails(getIntent());
+        applicationPkg = getIntent().getStringExtra(Constants.EXTRA_LOCKED_PKGNAME);
+
+        if (applicationPkg.equals(getPackageName())) {
+            getWindow().setBackgroundDrawable(new ColorDrawable(0));
+        }
+
+
+        applyLockedAppDetails();
     }
 }

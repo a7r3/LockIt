@@ -1,7 +1,10 @@
 package nooblife.lockit.tv;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
@@ -12,19 +15,18 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.bottomsheet.BottomSheetDialog;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import nooblife.lockit.R;
 import nooblife.lockit.activities.ConnectActivity;
+import nooblife.lockit.activities.LockActivity;
 import nooblife.lockit.adapter.ApplicationAdapter;
 import nooblife.lockit.database.BlacklistDatabase;
 import nooblife.lockit.model.Application;
 import nooblife.lockit.model.Blacklist;
+import nooblife.lockit.services.LockService;
 import nooblife.lockit.util.Constants;
-import nooblife.lockit.util.LockItServer;
 import nooblife.lockit.util.Utils;
 
 public class TvMainActivity extends Activity {
@@ -34,9 +36,15 @@ public class TvMainActivity extends Activity {
     ArrayList<Application> applications = new ArrayList<>();
     RecyclerView appList;
     ApplicationAdapter adapter;
-    TextView selectAll, resetOptions, startSession, connectionView;
+    TextView selectAll, resetOptions, startSession, connectionView, unlockView;
     private SharedPreferences sharedPreferences;
     private String serviceId;
+    private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            showMainUI();
+        }
+    };
     public static int CONNECT_ACTIVITY_RQ = 128;
 
     @Override
@@ -57,6 +65,8 @@ public class TvMainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tv_main);
         appList = findViewById(R.id.apps_list);
+
+        unlockView = findViewById(R.id.unlock_preview);
 
         GridLayoutManager layoutManager = new GridLayoutManager(this, 4, RecyclerView.VERTICAL, false);
         appList.setLayoutManager(layoutManager);
@@ -92,7 +102,7 @@ public class TvMainActivity extends Activity {
             }
 
             BlacklistDatabase.getInstance(TvMainActivity.this).blacklistDao().createBlacklist(new Blacklist(pkgList));
-            Utils.startLockService(TvMainActivity.this);
+            Utils.startLockService(TvMainActivity.this, Constants.ACTION_START_LOCKSERVICE_FROM_UI);
             finish();
         });
 
@@ -122,9 +132,37 @@ public class TvMainActivity extends Activity {
             }
         });
 
-        if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID)) {
+        if (Utils.isLockServiceRunning(this)) {
+            registerReceiver(unlockReceiver, new IntentFilter(Constants.ACTION_UNLOCK_MAINAPP));
+            showLockUI();
+        } else {
             connectionView.performClick();
+            showMainUI();
         }
     }
 
+    private void showMainUI() {
+        unlockView.setVisibility(View.GONE);
+        selectAll.setVisibility(View.VISIBLE);
+        connectionView.setVisibility(View.VISIBLE);
+        startSession.setVisibility(View.VISIBLE);
+        appList.setVisibility(View.VISIBLE);
+    }
+
+    private void showLockUI() {
+        unlockView.setVisibility(View.VISIBLE);
+        selectAll.setVisibility(View.GONE);
+        connectionView.setVisibility(View.GONE);
+        startSession.setVisibility(View.GONE);
+        appList.setVisibility(View.GONE);
+        Intent intent = new Intent(this, LockActivity.class);
+        intent.putExtra(Constants.EXTRA_LOCKED_PKGNAME, getPackageName());
+        startActivity(intent);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unregisterReceiver(unlockReceiver);
+    }
 }

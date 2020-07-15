@@ -43,6 +43,7 @@
     </LinearLayout>
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/connection_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -59,6 +60,7 @@
         app:layout_constraintTop_toTopOf="@id/title" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/select_all"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -100,6 +102,7 @@
         app:layout_constraintTop_toTopOf="@id/title" />
 
     <TextView
+        android:visibility="gone"
         android:id="@+id/start_session"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -118,10 +121,24 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/title" />
 
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/unlock_preview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Unlock to use the app"
+        android:textStyle="bold|italic"
+        android:textSize="28sp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/apps_list"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:visibility="gone"
         android:nextFocusUp="@id/start_session"
         android:paddingStart="24dp"
         android:paddingTop="4dp"

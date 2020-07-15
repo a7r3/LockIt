@@ -17,7 +17,10 @@ public abstract class BlacklistDatabase extends RoomDatabase {
 
     public static BlacklistDatabase getInstance(Context context) {
         if (instance != null) return instance;
-        instance = Room.databaseBuilder(context, BlacklistDatabase.class, "apps").allowMainThreadQueries().build();
+        instance = Room.databaseBuilder(context, BlacklistDatabase.class, "apps")
+                .allowMainThreadQueries()
+                .fallbackToDestructiveMigration()
+                .build();
         return instance;
     }
 

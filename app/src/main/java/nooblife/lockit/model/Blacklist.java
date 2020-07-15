@@ -15,8 +15,6 @@ public class Blacklist {
 
     ArrayList<String> packageList;
 
-    boolean isActive = false;
-
     public Blacklist(ArrayList<String> packageList) {
         this.packageList = packageList;
     }
@@ -35,13 +33,5 @@ public class Blacklist {
 
     public void setPackageList(ArrayList<String> packageList) {
         this.packageList = packageList;
-    }
-
-    public boolean isActive() {
-        return isActive;
-    }
-
-    public void setActive(boolean active) {
-        isActive = active;
     }
 }

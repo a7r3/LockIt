@@ -16,10 +16,4 @@ public interface BlacklistDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void createBlacklist(Blacklist blacklist);
 
-    @Query("SELECT isActive FROM apps WHERE profileName = 'default'")
-    boolean isServiceActive();
-
-    @Query("UPDATE apps SET isActive = :isServiceRunningNow WHERE profileName = 'default'")
-    void setServiceActive(boolean isServiceRunningNow);
-
 }
