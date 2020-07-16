@@ -21,6 +21,7 @@ import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import nooblife.lockit.activities.LockActivity;
 import nooblife.lockit.database.BlacklistDatabase;
 import nooblife.lockit.model.Application;
 import nooblife.lockit.model.Blacklist;
@@ -153,6 +154,27 @@ public class Utils {
     public static boolean isLockerActive(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(Constants.PREF_LOCKER_ACTIVE, false);
+    }
+
+    public static void setEmergencyUnlockCode(Context context, String code) {
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit()
+                .putString(Constants.PREF_EMERGENCY_UNLOCK_CODE, code)
+                .apply();
+    }
+
+    public static boolean isTheCodeRight(Context context, String code) {
+        return code.equals(
+                PreferenceManager.getDefaultSharedPreferences(context)
+                        .getString(Constants.PREF_EMERGENCY_UNLOCK_CODE, "0000")
+        );
+    }
+
+    public static void resetApp(Context context) {
+        startLockService(context, Constants.ACTION_EMERGENCY_UNLOCK_TRIGGERED);
+        setEmergencyUnlockCode(context, "0000");
+        PreferenceManager.getDefaultSharedPreferences(context)
+                .edit().clear().apply();
     }
 
     public static void exitToLauncher(Context context) {

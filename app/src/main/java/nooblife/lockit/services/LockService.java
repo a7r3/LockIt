@@ -119,6 +119,10 @@ public class LockService extends Service {
                 case Constants.ACTION_START_LOCKSERVICE_FROM_UI:
                     startLock();
                     break;
+                case Constants.ACTION_EMERGENCY_UNLOCK_TRIGGERED:
+                    stopLock();
+                    onDestroy();
+                    break;
             }
         }
 
@@ -316,6 +320,7 @@ public class LockService extends Service {
         super.onDestroy();
         unregisterReceiver(lockActivityBroadcastReceiver);
         // What's the use of a notification, when the service behind it is about to stop
+        stopLock();
         LockItServer.get(this).stop();
         stopForeground(true);
         stopSelf();

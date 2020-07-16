@@ -45,7 +45,8 @@ public class TvMainActivity extends Activity {
             showMainUI();
         }
     };
-    public static int CONNECT_ACTIVITY_RQ = 128;
+    public static final int CONNECT_ACTIVITY_RQ = 128;
+    public static final int EMERGENCY_UNLOCK_RQ = 420;
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -57,6 +58,9 @@ public class TvMainActivity extends Activity {
             else
                 status = "failed";
             Toast.makeText(TvMainActivity.this, "Pairing " + status + "!", Toast.LENGTH_SHORT).show();
+        } else if (requestCode == EMERGENCY_UNLOCK_RQ) {
+            if (resultCode == RESULT_OK)
+                recreate();
         }
     }
 
@@ -90,10 +94,10 @@ public class TvMainActivity extends Activity {
                 return;
             }
 
-            if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID)) {
-                Toast.makeText(TvMainActivity.this, "Set up a remote locker", Toast.LENGTH_LONG).show();
-                return;
-            }
+//            if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID)) {
+//                Toast.makeText(TvMainActivity.this, "Set up a remote locker", Toast.LENGTH_LONG).show();
+//                return;
+//            }
 
             final ArrayList<String> pkgList = new ArrayList<>();
 
@@ -132,6 +136,8 @@ public class TvMainActivity extends Activity {
             }
         });
 
+        Utils.setEmergencyUnlockCode(this, "0000");
+
         if (Utils.isLockServiceRunning(this)) {
             registerReceiver(unlockReceiver, new IntentFilter(Constants.ACTION_UNLOCK_MAINAPP));
             showLockUI();
@@ -157,7 +163,7 @@ public class TvMainActivity extends Activity {
         appList.setVisibility(View.GONE);
         Intent intent = new Intent(this, LockActivity.class);
         intent.putExtra(Constants.EXTRA_LOCKED_PKGNAME, getPackageName());
-        startActivity(intent);
+        startActivityForResult(intent, EMERGENCY_UNLOCK_RQ);
     }
 
     @Override

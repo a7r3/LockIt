@@ -17,6 +17,9 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +51,15 @@ public class LockItServer {
         this.isLocked = false;
         this.isRunning = false;
         this.isInPairingMode = false;
+    }
+
+    private String generateUnlockCode() {
+        Random r = new Random();
+        Set<Integer> s = new HashSet<>();
+        while (s.size() < 4) {
+            s.add(r.nextInt(9));
+        }
+        return s.toString();
     }
 
     public static LockItServer get(Context context) {
@@ -103,7 +115,9 @@ public class LockItServer {
                         if (onUnlockEventListener != null) onUnlockEventListener.onUnlock();
                     } else if (action.equals("pair")) {
                         String dedicatedServiceId = UUID.randomUUID().toString();
-                        writer.println(dedicatedServiceId);
+                        String emergencyUnlockCode = generateUnlockCode();
+                        Utils.setEmergencyUnlockCode(context, emergencyUnlockCode);
+                        writer.println(dedicatedServiceId + "|" + emergencyUnlockCode);
                         PreferenceManager.getDefaultSharedPreferences(context)
                                 .edit().putString(Constants.PREF_LOCKIT_RC_SERVICE_ID, dedicatedServiceId).apply();
                         if (onPairEventListener != null) onPairEventListener.onPair();

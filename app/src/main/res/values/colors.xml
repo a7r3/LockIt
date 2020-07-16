@@ -10,4 +10,8 @@
     <color name="search_opaque">#ffaa3f</color>
     <color name="selected_background">#ffaa3f</color>
     <color name="default_background">#3d3d3d</color>
+
+    <color name="red_500">#F44336</color>
+    <color name="green_500">#4CAF50</color>
+    <color name="yellow_800">#F9A825</color>
 </resources>

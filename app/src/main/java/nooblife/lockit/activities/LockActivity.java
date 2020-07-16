@@ -6,18 +6,30 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
+import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
 import android.transition.TransitionManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.leanback.widget.picker.PinPicker;
+
+import com.chaos.view.PinView;
+
+import java.util.concurrent.locks.Lock;
 
 import nooblife.lockit.R;
+import nooblife.lockit.services.LockService;
+import nooblife.lockit.tv.TvMainActivity;
 import nooblife.lockit.util.Constants;
 import nooblife.lockit.util.Utils;
 
@@ -26,9 +38,13 @@ public class LockActivity extends Activity {
     private TextView applicationName;
     private ImageView applicationIcon;
     private TextView toggleTemporaryUnlockRequest;
+    private TextView toggleEmergencyUnlockDialog;
     private String applicationPkg;
     private ApplicationInfo info;
     private View temporaryUnlockDialog;
+    private View emergencyUnlockDialog;
+    private PinPicker emergencyUnlockPinView;
+    private boolean isEmergencyUnlockRequested = false;
     private boolean isTemporaryUnlockRequested = false;
     private BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
@@ -109,18 +125,53 @@ public class LockActivity extends Activity {
         applicationName = findViewById(R.id.text_error_content);
         applicationIcon = findViewById(R.id.application_icon);
         toggleTemporaryUnlockRequest = findViewById(R.id.temp_unlock_request_button);
+        toggleEmergencyUnlockDialog = findViewById(R.id.emergency_unlock_button);
         temporaryUnlockDialog = findViewById(R.id.temp_unlock_dialog);
+        emergencyUnlockDialog = findViewById(R.id.emergency_unlock_dialog);
+        emergencyUnlockPinView = findViewById(R.id.emergency_unlock_code_text);
 
         toggleTemporaryUnlockRequest.setOnClickListener(v -> {
             TransitionManager.beginDelayedTransition((ViewGroup) getWindow().getDecorView());
             if (!isTemporaryUnlockRequested) {
                 temporaryUnlockDialog.setVisibility(View.VISIBLE);
                 toggleTemporaryUnlockRequest.setText("Cancel");
+                toggleEmergencyUnlockDialog.setVisibility(View.GONE);
             } else {
                 temporaryUnlockDialog.setVisibility(View.GONE);
                 toggleTemporaryUnlockRequest.setText("Unlock for once");
+                toggleEmergencyUnlockDialog.setVisibility(View.VISIBLE);
             }
+            emergencyUnlockDialog.setVisibility(View.GONE);
             isTemporaryUnlockRequested = !isTemporaryUnlockRequested;
+        });
+
+        toggleEmergencyUnlockDialog.setOnClickListener(v -> {
+            TransitionManager.beginDelayedTransition((ViewGroup) getWindow().getDecorView());
+            if (!isEmergencyUnlockRequested) {
+                emergencyUnlockDialog.setVisibility(View.VISIBLE);
+                toggleEmergencyUnlockDialog.setText("Cancel");
+                toggleTemporaryUnlockRequest.setVisibility(View.GONE);
+                emergencyUnlockPinView.setActivated(true);
+                emergencyUnlockPinView.requestFocus();
+            } else {
+                emergencyUnlockDialog.setVisibility(View.GONE);
+                toggleEmergencyUnlockDialog.setText("Emergency Unlock");
+                toggleTemporaryUnlockRequest.setVisibility(View.VISIBLE);
+            }
+            temporaryUnlockDialog.setVisibility(View.GONE);
+            isEmergencyUnlockRequested = !isEmergencyUnlockRequested;
+        });
+
+        emergencyUnlockPinView.setOnClickListener(v -> {
+            if (Utils.isTheCodeRight(LockActivity.this, emergencyUnlockPinView.getPin())) {
+                Utils.resetApp(LockActivity.this);
+                setResult(RESULT_OK);
+                finish();
+            } else {
+                Toast.makeText(LockActivity.this, "Unlock code incorrect. Try again", Toast.LENGTH_SHORT).show();
+                emergencyUnlockPinView.resetPin();
+            }
+
         });
 
         applicationPkg = getIntent().getStringExtra(Constants.EXTRA_LOCKED_PKGNAME);
@@ -128,7 +179,6 @@ public class LockActivity extends Activity {
         if (applicationPkg.equals(getPackageName())) {
             getWindow().setBackgroundDrawable(new ColorDrawable(0));
         }
-
 
         applyLockedAppDetails();
     }
