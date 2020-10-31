@@ -23,10 +23,6 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.leanback.widget.picker.PinPicker;
 
-import com.chaos.view.PinView;
-
-import java.util.concurrent.locks.Lock;
-
 import nooblife.lockit.R;
 import nooblife.lockit.services.LockService;
 import nooblife.lockit.tv.TvMainActivity;

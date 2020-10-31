@@ -39,12 +39,7 @@ public class TvMainActivity extends Activity {
     TextView selectAll, resetOptions, startSession, connectionView, unlockView;
     private SharedPreferences sharedPreferences;
     private String serviceId;
-    private BroadcastReceiver unlockReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            showMainUI();
-        }
-    };
+    private BroadcastReceiver unlockReceiver = null;
     public static final int CONNECT_ACTIVITY_RQ = 128;
     public static final int EMERGENCY_UNLOCK_RQ = 420;
 
@@ -136,13 +131,16 @@ public class TvMainActivity extends Activity {
             }
         });
 
-        Utils.setEmergencyUnlockCode(this, "0000");
-
         if (Utils.isLockServiceRunning(this)) {
+            unlockReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    showMainUI();
+                }
+            };
             registerReceiver(unlockReceiver, new IntentFilter(Constants.ACTION_UNLOCK_MAINAPP));
             showLockUI();
         } else {
-            connectionView.performClick();
             showMainUI();
         }
     }
@@ -153,6 +151,8 @@ public class TvMainActivity extends Activity {
         connectionView.setVisibility(View.VISIBLE);
         startSession.setVisibility(View.VISIBLE);
         appList.setVisibility(View.VISIBLE);
+        if (serviceId.equals(Constants.LOCKIT_DEFAULT_SERVICE_ID))
+            connectionView.performClick();
     }
 
     private void showLockUI() {
@@ -169,6 +169,7 @@ public class TvMainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(unlockReceiver);
+        if (unlockReceiver != null)
+            unregisterReceiver(unlockReceiver);
     }
 }
