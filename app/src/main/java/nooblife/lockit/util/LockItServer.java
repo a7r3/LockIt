@@ -5,6 +5,7 @@ import android.os.Build;
 import android.util.Log;
 
 import androidx.preference.PreferenceManager;
+import androidx.room.util.StringUtil;
 
 import com.github.druk.rx2dnssd.BonjourService;
 import com.github.druk.rx2dnssd.Rx2Dnssd;
@@ -17,7 +18,10 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -59,7 +63,9 @@ public class LockItServer {
         while (s.size() < 4) {
             s.add(r.nextInt(9));
         }
-        return s.toString();
+        StringBuilder codeBuilder = new StringBuilder();
+        for (Integer i : s) codeBuilder.append(i);
+        return codeBuilder.toString();
     }
 
     public static LockItServer get(Context context) {
@@ -98,7 +104,7 @@ public class LockItServer {
                 serverPort = serverSocket.getLocalPort();
                 startDNSSDService();
 
-                while (true) {
+                while (isRunning) {
                     Socket socket = serverSocket.accept();
                     BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     PrintWriter writer = new PrintWriter(socket.getOutputStream());

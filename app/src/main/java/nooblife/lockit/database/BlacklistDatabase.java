@@ -10,7 +10,7 @@ import androidx.room.TypeConverters;
 import nooblife.lockit.dao.BlacklistDao;
 import nooblife.lockit.model.Blacklist;
 
-@Database(entities = Blacklist.class, version = 2, exportSchema = false)
+@Database(entities = Blacklist.class, version = 5, exportSchema = false)
 @TypeConverters({ArrayListTypeConverter.class})
 public abstract class BlacklistDatabase extends RoomDatabase {
     private static BlacklistDatabase instance;
